@@ -11,9 +11,11 @@
 
 #include <stdlib.h>
 
+#include <Alert.h>
 #include <Beep.h>
 #include <Notifications.h>
 #include <PropertyInfo.h>
+#include <Roster.h>
 
 #include "NotificationWindow.h"
 
@@ -66,6 +68,17 @@ NotificationServer::MessageReceived(BMessage* message)
 
 			// Let the notification window handle this message
 			BMessenger(fWindow).SendMessage(message);
+			
+		/*	BMessenger messenger = message->ReturnAddress();
+			app_info info;
+			status_t result = 0;
+				if (messenger.IsValid())
+					result = be_roster->GetRunningAppInfo(messenger.Team(), &info);
+			BString text("Messenger valid: ");
+			text.Append(messenger.IsValid()?"true":"false");
+			text.Append("\nSig: ").Append(info.signature);
+			text.Append("\nResult: ").Append(strerror(result));
+			(new BAlert("sig", text, "OK"))->Go(NULL);*/
 			break;
 		}
 		default:

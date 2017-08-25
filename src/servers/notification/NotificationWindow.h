@@ -13,6 +13,7 @@
 #include <map>
 
 #include <AppFileInfo.h>
+#include <Path.h>
 #include <String.h>
 #include <Window.h>
 
@@ -80,6 +81,7 @@ private:
 			int32					fTimeout;
 
 			appfilter_t				fAppFilters;
+			BPath					fCachePath;
 };
 
 extern property_info main_prop_list[];

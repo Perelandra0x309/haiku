@@ -41,8 +41,8 @@ const int32 kAppIndex = 0;
 const int32 kAppEnabledIndex = 1;
 
 // Notifications column indexes
-const int32 kTitleIndex = 0;
-const int32 kDateIndex = 1;
+const int32 kDateIndex = 0;
+const int32 kTitleIndex = 1;
 const int32 kTypeIndex = 2;
 const int32 kAllowIndex = 3;
 

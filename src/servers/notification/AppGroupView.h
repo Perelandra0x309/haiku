@@ -11,6 +11,7 @@
 #include <vector>
 
 #include <GroupView.h>
+#include <Messenger.h>
 #include <String.h>
 
 class BGroupView;
@@ -22,7 +23,7 @@ typedef std::vector<NotificationView*> infoview_t;
 
 class AppGroupView : public BGroupView {
 public:
-								AppGroupView(NotificationWindow* win, const char* label);
+								AppGroupView(const BMessenger& messenger, const char* label);
 
 	virtual	void				MouseDown(BPoint point);
 	virtual	void				MessageReceived(BMessage* msg);
@@ -32,19 +33,23 @@ public:
 			int32				ChildrenCount();
 
 			void				AddInfo(NotificationView* view);
+			void				SetPreviewModeOn(bool enabled);
 
 			const BString&		Group() const;
+			void				SetGroup(const char* group);
 
 private:
 			void				_DrawCloseButton(const BRect& updateRect);
 
 			BString				fLabel;
-			NotificationWindow*	fParent;
+			BMessenger			fMessenger;
+		//TODO	NotificationWindow*	fParent;
 			infoview_t			fInfo;
 			bool				fCollapsed;
 			BRect				fCloseRect;
 			BRect				fCollapseRect;
 			bool				fCloseClicked;
+			bool				fPreviewModeOn;
 };
 
 #endif	// _APP_GROUP_VIEW_H

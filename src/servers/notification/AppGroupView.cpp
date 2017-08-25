@@ -26,13 +26,14 @@
 static const int kHeaderSize = 23;
 
 
-AppGroupView::AppGroupView(NotificationWindow* win, const char* label)
+AppGroupView::AppGroupView(const BMessenger& messenger, const char* label)
 	:
 	BGroupView("appGroup", B_VERTICAL, 0),
 	fLabel(label),
-	fParent(win),
+	fMessenger(messenger),
 	fCollapsed(false),
-	fCloseClicked(false)
+	fCloseClicked(false),
+	fPreviewModeOn(false)
 {
 	SetFlags(Flags() | B_WILL_DRAW);
 
@@ -132,6 +133,10 @@ AppGroupView::_DrawCloseButton(const BRect& updateRect)
 void
 AppGroupView::MouseDown(BPoint point)
 {
+	// Preview Mode ignores any mouse clicks
+	if (fPreviewModeOn)
+		return;
+
 	if (BRect(fCloseRect).InsetBySelf(-5, -5).Contains(point)) {
 		int32 children = fInfo.size();
 		for (int32 i = 0; i < children; i++) {
@@ -144,7 +149,7 @@ AppGroupView::MouseDown(BPoint point)
 		// Remove ourselves from the parent view
 		BMessage message(kRemoveGroupView);
 		message.AddPointer("view", this);
-		fParent->PostMessage(&message);
+		fMessenger.SendMessage(&message);
 	} else if (BRect(fCollapseRect).InsetBySelf(-5, -5).Contains(point)) {
 		fCollapsed = !fCollapsed;
 		int32 children = fInfo.size();
@@ -186,13 +191,13 @@ AppGroupView::MessageReceived(BMessage* msg)
 			view->RemoveSelf();
 			delete view;
 
-			fParent->PostMessage(msg);
+			fMessenger.SendMessage(msg);
 
 			if (!this->HasChildren()) {
 				Hide();
 				BMessage removeSelfMessage(kRemoveGroupView);
 				removeSelfMessage.AddPointer("view", this);
-				fParent->PostMessage(&removeSelfMessage);
+				fMessenger.SendMessage(&removeSelfMessage);
 			}
 			
 			break;
@@ -215,7 +220,7 @@ AppGroupView::AddInfo(NotificationView* view)
 		for (int32 i = 0; i < children; i++) {
 			if (id == fInfo[i]->MessageID()) {
 				NotificationView* oldView = fInfo[i];
-				fParent->NotificationViewSwapped(oldView, view);
+		//TODO		fParent->NotificationViewSwapped(oldView, view);
 				oldView->RemoveSelf();
 				delete oldView;
 				
@@ -246,10 +251,25 @@ AppGroupView::AddInfo(NotificationView* view)
 }
 
 
+void
+AppGroupView::SetPreviewModeOn(bool enabled)
+{
+	fPreviewModeOn = enabled;
+}
+
+
 const BString&
 AppGroupView::Group() const
 {
 	return fLabel;
+}
+
+
+void
+AppGroupView::SetGroup(const char* group)
+{
+	fLabel.SetTo(group);
+	Invalidate();
 }
 
 

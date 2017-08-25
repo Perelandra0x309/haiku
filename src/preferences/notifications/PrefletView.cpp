@@ -16,6 +16,7 @@
 
 #include "DisplayView.h"
 #include "GeneralView.h"
+#include "HistoryView.h"
 #include "NotificationsView.h"
 #include "PrefletView.h"
 #include "SettingsHost.h"
@@ -36,6 +37,7 @@ PrefletView::PrefletView(SettingsHost* host)
 	GeneralView* general = new GeneralView(host);
 	DisplayView* display = new DisplayView(host);
 	NotificationsView* apps = new NotificationsView(host);
+	HistoryView* history = new HistoryView(host);
 
 	// Page selector
 	BTab* tab = new BTab();
@@ -49,6 +51,10 @@ PrefletView::PrefletView(SettingsHost* host)
 	tab = new BTab();
 	AddTab(apps, tab);
 	tab->SetLabel(B_TRANSLATE("Notifications"));
+	
+	tab = new BTab();
+	AddTab(history, tab);
+	tab->SetLabel(B_TRANSLATE("History"));
 }
 
 
@@ -62,7 +68,7 @@ PrefletView::CurrentPage()
 int32
 PrefletView::CountPages() const
 {
-	return 3;
+	return 4;
 }
 
 

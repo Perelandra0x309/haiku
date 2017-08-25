@@ -54,6 +54,7 @@ const float kPenSize				= 1;
 const float kEdgePadding			= 2;
 const float kSmallPadding			= 2;
 
+
 NotificationWindow::NotificationWindow()
 	:
 	BWindow(BRect(0, 0, -1, -1), B_TRANSLATE_MARK("Notification"), 
@@ -62,6 +63,13 @@ NotificationWindow::NotificationWindow()
 		| B_NOT_RESIZABLE | B_NOT_MOVABLE | B_AUTO_UPDATE_SIZE_LIMITS, 
 		B_ALL_WORKSPACES)
 {
+	status_t result = find_directory(B_USER_CACHE_DIRECTORY, &fCachePath);
+	fCachePath.Append("Notifications");
+	BDirectory cacheDir;
+	result = cacheDir.SetTo(fCachePath.Path());
+	if(result == B_ENTRY_NOT_FOUND)
+		cacheDir.CreateDirectory(fCachePath.Path(), NULL);
+	
 	SetLayout(new BGroupLayout(B_VERTICAL, 0));
 
 	_LoadSettings(true);
@@ -159,28 +167,29 @@ NotificationWindow::MessageReceived(BMessage* message)
 			if (notification->InitCheck() == B_OK) {
 				bigtime_t timeout;
 				if (message->FindInt64("timeout", &timeout) != B_OK)
-					timeout = -1;
+					timeout = fTimeout;
 				BMessenger messenger = message->ReturnAddress();
 				app_info info;
 
 				if (messenger.IsValid())
 					be_roster->GetRunningAppInfo(messenger.Team(), &info);
 				else
-					be_roster->GetAppInfo("application/x-vnd.Be-SHEL", &info);
+					be_roster->GetAppInfo("application/x-vnd.Haiku-Terminal", &info);
 
 				bool allow = false;
 				appfilter_t::iterator it = fAppFilters.find(info.signature);
-
+				
+				AppUsage* appUsage = NULL;
 				if (it == fAppFilters.end()) {
-					AppUsage* appUsage = new AppUsage(notification->Group(),
-						true);
+					appUsage = new AppUsage(notification->Group(), true);
 
 					appUsage->Allowed(notification->Title(),
 							notification->Type());
 					fAppFilters[info.signature] = appUsage;
 					allow = true;
 				} else {
-					allow = it->second->Allowed(notification->Title(),
+					appUsage = it->second;
+					allow = appUsage->Allowed(notification->Title(),
 						notification->Type());
 				}
 
@@ -196,8 +205,8 @@ NotificationWindow::MessageReceived(BMessage* message)
 					} else
 						group = aIt->second;
 
-					NotificationView* view = new NotificationView(this,
-						notification, timeout);
+					NotificationView* view = new NotificationView(notification,
+						timeout, fIconSize);
 
 					group->AddInfo(view);
 
@@ -206,6 +215,31 @@ NotificationWindow::MessageReceived(BMessage* message)
 					reply.AddInt32("error", B_OK);
 				} else
 					reply.AddInt32("error", B_NOT_ALLOWED);
+				
+				// Cache notification
+			//	BString text("Group: ");
+			//	text.Append(notification->Group()).Append("\nSig: ").Append(info.signature);
+			//	text.Append("\nMessenger valid: ").Append(messenger.IsValid()?"true":"false");
+			//	(new BAlert("sig", text, "OK"))->Go(NULL);
+				BPath path = fCachePath;
+				BString group(notification->Group());
+				if (group == "")
+					path.Append("_no_group");
+				else
+					path.Append(group);
+				BMessage archive(kNotificationsArchive);
+				BFile file(path.Path(), B_READ_ONLY | B_CREATE_FILE);
+				archive.Unflatten(&file);
+				file.Unset();
+				BMessage notificationData(kNotificationData);
+				notificationData.AddMessage(kNameNotificationMessage, message);
+				notificationData.AddBool(kNameWasShown, allow);
+				notificationData.AddInt32(kNameTimestamp, time(NULL));
+				archive.AddMessage(kNameNotificationData, &notificationData);
+				file.SetTo(path.Path(), B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE);
+				archive.Flatten(&file);
+				file.Unset();
+				
 			} else {
 				reply.what = B_MESSAGE_NOT_UNDERSTOOD;
 				reply.AddInt32("error", B_ERROR);
