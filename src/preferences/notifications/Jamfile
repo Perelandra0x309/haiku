@@ -11,9 +11,9 @@ Application Notifications :
 	SettingsPane.cpp
 	GeneralView.cpp
 	HistoryView.cpp
+	NotificationListItem.cpp
 	../../servers/notification/NotificationView.cpp
 	../../servers/notification/AppGroupView.cpp
-	NotificationRow.cpp
 	: be translation libcolumnlistview.a libnotification.a [ TargetLibstdc++ ] localestub
 	: Notifications.rdef
 ;
