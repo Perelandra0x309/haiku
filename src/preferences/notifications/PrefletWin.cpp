@@ -42,12 +42,10 @@ PrefletWin::PrefletWin()
 	fMainView->SetBorder(B_NO_BORDER);
 	fMainView->SetExplicitMaxSize(BSize(B_SIZE_UNLIMITED, B_SIZE_UNSET));
 
-	// Apply and revert buttons
+	// Revert button
 	fRevert = new BButton("revert", B_TRANSLATE("Revert"),
 		new BMessage(kRevert));
 	fRevert->SetEnabled(false);
-	fApply = new BButton("apply", B_TRANSLATE("Apply"), new BMessage(kApply));
-	fApply->SetEnabled(false);
 
 	// Build the layout
 	BLayoutBuilder::Group<>(this, B_VERTICAL, 0)
@@ -57,7 +55,6 @@ PrefletWin::PrefletWin()
 		.AddGroup(B_HORIZONTAL)
 			.Add(fRevert)
 			.AddGlue()
-			.Add(fApply)
 			.SetInsets(B_USE_WINDOW_SPACING, B_USE_DEFAULT_SPACING,
 				B_USE_WINDOW_SPACING, B_USE_WINDOW_SPACING);
 
@@ -89,10 +86,9 @@ PrefletWin::MessageReceived(BMessage* msg)
 				SettingsPane* pane =
 					dynamic_cast<SettingsPane*>(fMainView->PageAt(i));
 				if (pane) {
-					if (pane->Save(settingsStore) == B_OK) {
-						fApply->SetEnabled(false);
-						fRevert->SetEnabled(true);
-					} else
+					if (pane->Save(settingsStore) == B_OK)
+						fRevert->SetEnabled(_RevertPossible());
+					else
 						break;
 				}
 			}
@@ -113,14 +109,9 @@ PrefletWin::MessageReceived(BMessage* msg)
 			break;
 		}
 		case kRevert:
-			for (int32 i = 0; i < fMainView->CountPages(); i++) {
-				SettingsPane* pane =
-					dynamic_cast<SettingsPane*>(fMainView->PageAt(i));
-				if (pane) {
-					if (pane->Revert() == B_OK)
-						fRevert->SetEnabled(false);
-				}
-			}
+			fRevert->SetEnabled(false);
+			_Revert();
+			PostMessage(kApply);
 			break;
 		default:
 			BWindow::MessageReceived(msg);
@@ -139,7 +130,7 @@ PrefletWin::QuitRequested()
 void
 PrefletWin::SettingChanged()
 {
-	fApply->SetEnabled(true);
+	PostMessage(kApply);
 }
 
 
@@ -164,4 +155,30 @@ PrefletWin::ReloadSettings()
 		if (pane)
 			pane->Load(settings);
 	}
+}
+
+
+status_t
+PrefletWin::_Revert()
+{
+	for (int32 i = 0; i < fMainView->CountPages(); i++) {
+		SettingsPane* pane =
+			dynamic_cast<SettingsPane*>(fMainView->PageAt(i));
+		if (pane)
+			pane->Revert();
+	}
+	return B_OK;
+}
+
+
+bool
+PrefletWin::_RevertPossible()
+{
+	for (int32 i = 0; i < fMainView->CountPages(); i++) {
+		SettingsPane* pane =
+			dynamic_cast<SettingsPane*>(fMainView->PageAt(i));
+		if (pane && pane->RevertPossible())
+			return true;
+	}
+	return false;
 }

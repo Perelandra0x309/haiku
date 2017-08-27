@@ -6,11 +6,14 @@
 #ifndef _GENERAL_VIEW_H
 #define _GENERAL_VIEW_H
 
-#include "SettingsPane.h"
 
-class BCheckBox;
-class BStringView;
-class BTextControl;
+#include <CheckBox.h>
+#include <Menu.h>
+#include <MenuField.h>
+#include <Mime.h>
+#include <TextControl.h>
+
+#include "SettingsPane.h"
 
 class GeneralView : public SettingsPane {
 public:
@@ -23,12 +26,20 @@ public:
 			status_t		Load(BMessage&);
 			status_t		Save(BMessage&);
 			status_t		Revert();
+			bool			RevertPossible();
 
 private:
 		BCheckBox*			fNotificationBox;
-		BCheckBox*			fAutoStart;
+//		BCheckBox*			fAutoStart;
 		BTextControl*		fTimeout;
-		BCheckBox*			fHideAll;
+//		BCheckBox*			fHideAll;
+		BTextControl*		fWindowWidth;
+		BMenu*				fIconSize;
+		BMenuField*			fIconSizeField;
+		
+		int32				fOriginalTimeout;
+		float				fOriginalWidth;
+		icon_size			fOriginalIconSize;
 
 		bool				_CanFindServer(entry_ref* ref);
 		bool				_IsServerRunning();

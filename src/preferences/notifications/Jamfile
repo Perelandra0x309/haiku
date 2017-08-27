@@ -10,12 +10,10 @@ Application Notifications :
 	PrefletView.cpp
 	SettingsPane.cpp
 	GeneralView.cpp
-	DisplayView.cpp
 	HistoryView.cpp
 	../../servers/notification/NotificationView.cpp
 	../../servers/notification/AppGroupView.cpp
 	NotificationRow.cpp
-	NotificationsView.cpp
 	: be translation libcolumnlistview.a libnotification.a [ TargetLibstdc++ ] localestub
 	: Notifications.rdef
 ;

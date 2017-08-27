@@ -15,7 +15,6 @@
 #include <Alert.h>
 #include <Button.h>
 #include <Catalog.h>
-#include <CheckBox.h>
 #include <Directory.h>
 #include <File.h>
 #include <FindDirectory.h>
@@ -28,7 +27,6 @@
 #include <String.h>
 #include <StringView.h>
 #include <SymLink.h>
-#include <TextControl.h>
 #include <Volume.h>
 #include <VolumeRoster.h>
 
@@ -51,36 +49,53 @@ GeneralView::GeneralView(SettingsHost* host)
 		new BMessage(kToggleNotifications));
 
 	// Autostart
-	fAutoStart = new BCheckBox("autostart",
+/*	fAutoStart = new BCheckBox("autostart",
 		B_TRANSLATE("Enable notifications at startup"),
-		new BMessage(kSettingChanged));
+		new BMessage(kSettingChanged));*/
 
 	// Display time
-	fTimeout = new BTextControl(B_TRANSLATE("Hide notifications from screen"
-		" after"), NULL, new BMessage(kSettingChanged));
+	fTimeout = new BTextControl(B_TRANSLATE("Hide notifications after"),
+		NULL, new BMessage(kSettingChanged));
 	BStringView* displayTimeLabel = new BStringView("dt_label",
 		B_TRANSLATE("seconds of inactivity"));
+
+	// Window width
+	fWindowWidth = new BTextControl(B_TRANSLATE("Window width:"), NULL,
+		new BMessage(kSettingChanged));
+
+	// Icon size
+	fIconSize = new BMenu("iconSize");
+	fIconSize->AddItem(new BMenuItem(B_TRANSLATE("Mini icon"),
+		new BMessage(kSettingChanged)));
+	fIconSize->AddItem(new BMenuItem(B_TRANSLATE("Large icon"),
+		new BMessage(kSettingChanged)));
+	fIconSize->SetLabelFromMarked(true);
+	fIconSizeField = new BMenuField(B_TRANSLATE("Icon size:"), fIconSize);
 
 	// Default position
 	// TODO: Here will come a screen representation with the four corners
 	// clickable
 
 	BLayoutBuilder::Group<>(this, B_VERTICAL)
-		.AddGroup(B_HORIZONTAL, B_USE_WINDOW_SPACING)
+		.SetInsets(B_USE_WINDOW_SPACING)
+		.AddGroup(B_HORIZONTAL)
 			.Add(fNotificationBox)
 			.AddGlue()
 		.End()
-		.AddGroup(B_VERTICAL, B_USE_WINDOW_SPACING)
-			.Add(fAutoStart)
-			.AddGroup(B_HORIZONTAL)
-				.AddGroup(B_HORIZONTAL, 2)
-					.Add(fTimeout)
-					.Add(displayTimeLabel)
-				.End()
-			.End()
+		.AddGroup(B_HORIZONTAL)
+			.Add(fWindowWidth)
+			.AddGlue()
 		.End()
-		.SetInsets(B_USE_WINDOW_SPACING)
-		.AddGlue();
+		.AddGroup(B_HORIZONTAL)
+			.Add(fIconSizeField)
+			.AddGlue()
+		.End()
+		.AddGroup(B_HORIZONTAL, 4)
+			.Add(fTimeout)
+			.Add(displayTimeLabel)
+		.End()
+		.AddGlue()
+	.End();
 }
 
 
@@ -88,8 +103,9 @@ void
 GeneralView::AttachedToWindow()
 {
 	fNotificationBox->SetTarget(this);
-	fAutoStart->SetTarget(this);
 	fTimeout->SetTarget(this);
+	fWindowWidth->SetTarget(this);
+	fIconSize->SetTargetForItems(this);
 }
 
 
@@ -173,33 +189,50 @@ GeneralView::MessageReceived(BMessage* msg)
 status_t
 GeneralView::Load(BMessage& settings)
 {
-	char buffer[255];
-
 	fNotificationBox->SetValue(_IsServerRunning() ? B_CONTROL_ON : B_CONTROL_OFF);
 
-	bool autoStart;
+/*	bool autoStart;
 	if (settings.FindBool(kAutoStartName, &autoStart) != B_OK)
 		autoStart = kDefaultAutoStart;
-	fAutoStart->SetValue(autoStart ? B_CONTROL_ON : B_CONTROL_OFF);
+	fAutoStart->SetValue(autoStart ? B_CONTROL_ON : B_CONTROL_OFF);*/
 
-	int32 timeout;
-	if (settings.FindInt32(kTimeoutName, &timeout) != B_OK)
-		timeout = kDefaultTimeout;
-	(void)sprintf(buffer, "%" B_PRId32, timeout);
-	fTimeout->SetText(buffer);
+	if (settings.FindInt32(kTimeoutName, &fOriginalTimeout) != B_OK)
+		fOriginalTimeout = kDefaultTimeout;
 
-	return B_OK;
+	if (settings.FindFloat(kWidthName, &fOriginalWidth) != B_OK)
+		fOriginalWidth = kDefaultWidth;
+
+	int32 setting;
+	if (settings.FindInt32(kIconSizeName, &setting) != B_OK)
+		fOriginalIconSize = kDefaultIconSize;
+	else
+		fOriginalIconSize = (icon_size)setting;
+
+	return Revert();
 }
 
 
 status_t
 GeneralView::Save(BMessage& settings)
 {
-	bool autoStart = (fAutoStart->Value() == B_CONTROL_ON);
-	settings.AddBool(kAutoStartName, autoStart);
+//	bool autoStart = (fAutoStart->Value() == B_CONTROL_ON);
+//	settings.AddBool(kAutoStartName, autoStart);
 
 	int32 timeout = atol(fTimeout->Text());
 	settings.AddInt32(kTimeoutName, timeout);
+
+	float width = atof(fWindowWidth->Text());
+	settings.AddFloat(kWidthName, width);
+
+	icon_size iconSize = kDefaultIconSize;
+	switch (fIconSize->IndexOf(fIconSize->FindMarked())) {
+		case 0:
+			iconSize = B_MINI_ICON;
+			break;
+		default:
+			iconSize = B_LARGE_ICON;
+	}
+	settings.AddInt32(kIconSizeName, (int32)iconSize);
 
 	return B_OK;
 }
@@ -208,7 +241,49 @@ GeneralView::Save(BMessage& settings)
 status_t
 GeneralView::Revert()
 {
-	return B_ERROR;
+	char buffer[255];
+	(void)sprintf(buffer, "%" B_PRId32, fOriginalTimeout);
+	fTimeout->SetText(buffer);
+	
+	char widthText[255];
+	BMenuItem* item = NULL;
+	(void)sprintf(widthText, "%.2f", fOriginalWidth);
+	fWindowWidth->SetText(widthText);
+	
+	if (fOriginalIconSize == B_MINI_ICON)
+		item = fIconSize->ItemAt(0);
+	else
+		item = fIconSize->ItemAt(1);
+	if (item)
+		item->SetMarked(true);
+	
+	return B_OK;
+}
+
+
+bool
+GeneralView::RevertPossible()
+{
+	int32 timeout = atol(fTimeout->Text());
+	if (fOriginalTimeout != timeout)
+		return true;
+	
+	float width = atof(fWindowWidth->Text());
+	if (fOriginalWidth != width)
+		return true;
+	
+	icon_size iconSize = kDefaultIconSize;
+	switch (fIconSize->IndexOf(fIconSize->FindMarked())) {
+		case 0:
+			iconSize = B_MINI_ICON;
+			break;
+		default:
+			iconSize = B_LARGE_ICON;
+	}
+	if (fOriginalIconSize != iconSize)
+		return true;
+	
+	return false;
 }
 
 

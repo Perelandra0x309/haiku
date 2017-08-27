@@ -23,6 +23,7 @@ public:
 	virtual status_t		Load(BMessage&) = 0;
 	virtual	status_t		Save(BMessage&) = 0;
 	virtual	status_t		Revert() = 0;
+	virtual bool			RevertPossible() = 0;
 
 protected:
 			SettingsHost*	fHost;

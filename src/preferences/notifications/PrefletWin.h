@@ -6,6 +6,8 @@
 #ifndef _PREFLET_WIN_H
 #define _PREFLET_WIN_H
 
+
+#include <Message.h>
 #include <Window.h>
 
 #include "SettingsHost.h"
@@ -25,8 +27,10 @@ public:
 			void			ReloadSettings();
 
 private:
+			status_t		_Revert();
+			bool			_RevertPossible();
+			
 			PrefletView*	fMainView;
-			BButton*		fApply;
 			BButton*		fRevert;
 };
 

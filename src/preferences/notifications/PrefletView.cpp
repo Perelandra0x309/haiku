@@ -14,10 +14,10 @@
 #include <LayoutItem.h>
 #include <Message.h>
 
-#include "DisplayView.h"
+//#include "DisplayView.h"
 #include "GeneralView.h"
 #include "HistoryView.h"
-#include "NotificationsView.h"
+//#include "NotificationsView.h"
 #include "PrefletView.h"
 #include "SettingsHost.h"
 
@@ -35,22 +35,22 @@ PrefletView::PrefletView(SettingsHost* host)
 {
 	// Pages
 	GeneralView* general = new GeneralView(host);
-	DisplayView* display = new DisplayView(host);
-	NotificationsView* apps = new NotificationsView(host);
-	HistoryView* history = new HistoryView(host);
+//	DisplayView* display = new DisplayView(host);
+//	NotificationsView* apps = new NotificationsView(host);
+	HistoryView* history = new HistoryView();
 
 	// Page selector
 	BTab* tab = new BTab();
 	AddTab(general, tab);
-	tab->SetLabel(B_TRANSLATE("General"));
+	tab->SetLabel(B_TRANSLATE("Settings"));
 
-	tab = new BTab();
+/*	tab = new BTab();
 	AddTab(display, tab);
 	tab->SetLabel(B_TRANSLATE("Display"));
 
 	tab = new BTab();
 	AddTab(apps, tab);
-	tab->SetLabel(B_TRANSLATE("Notifications"));
+	tab->SetLabel(B_TRANSLATE("Notifications"));*/
 	
 	tab = new BTab();
 	AddTab(history, tab);
@@ -68,7 +68,7 @@ PrefletView::CurrentPage()
 int32
 PrefletView::CountPages() const
 {
-	return 4;
+	return 2;
 }
 
 
