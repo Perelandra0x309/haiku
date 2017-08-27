@@ -28,7 +28,6 @@
 #include <notification/NotificationReceived.h>
 
 #include "NotificationListItem.h"
-#include "NotificationRow.h"
 
 #undef B_TRANSLATION_CONTEXT
 #define B_TRANSLATION_CONTEXT "HistoryView"
