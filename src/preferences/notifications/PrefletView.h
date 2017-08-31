@@ -12,6 +12,9 @@ class BIconRule;
 
 class SettingsHost;
 
+const int32 kShowRevert = '_SHR';
+#define kShowRevertKey "showRevert"
+
 class PrefletView : public BTabView {
 public:
 						PrefletView(SettingsHost* host);
@@ -19,6 +22,7 @@ public:
 			BView*		CurrentPage();
 			int32		CountPages() const;
 			BView*		PageAt(int32 index);
+	virtual	void		Select(int32 index);
 };
 
 #endif // PREFLETVIEW_H

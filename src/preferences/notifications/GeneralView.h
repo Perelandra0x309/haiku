@@ -7,6 +7,7 @@
 #define _GENERAL_VIEW_H
 
 
+#include <Button.h>
 #include <CheckBox.h>
 #include <Menu.h>
 #include <MenuField.h>

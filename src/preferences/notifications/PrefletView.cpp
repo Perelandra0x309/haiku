@@ -13,6 +13,7 @@
 #include <GroupLayoutBuilder.h>
 #include <LayoutItem.h>
 #include <Message.h>
+#include <Window.h>
 
 //#include "DisplayView.h"
 #include "GeneralView.h"
@@ -26,7 +27,7 @@
 #define B_TRANSLATION_CONTEXT "PrefletView"
 
 
-const int32 kPageSelected = '_LCH';
+//const int32 kPageSelected = '_LCH';
 
 
 PrefletView::PrefletView(SettingsHost* host)
@@ -76,4 +77,20 @@ BView*
 PrefletView::PageAt(int32 index)
 {
 	return TabAt(index)->View();
+}
+
+
+
+void
+PrefletView::Select(int32 index)
+{
+	if (index == Selection())
+		return;
+
+	BTabView::Select(index);
+
+	bool showRevert = index != (CountPages() - 1);
+	BMessage showMessage(kShowRevert);
+	showMessage.AddBool(kShowRevertKey, showRevert);
+	Window()->PostMessage(&showMessage);
 }

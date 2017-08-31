@@ -69,6 +69,17 @@ NotificationListItem::DrawItem(BView *owner, BRect item_rect, bool complete)
 	else
 		owner->SetHighColor(ui_color(B_LIST_ITEM_TEXT_COLOR));
 	owner->MovePenTo(cursor.x, cursor.y);
+	
+	if (fTitle.Length() > 0) {
+		owner->PushState();
+		owner->SetFont(be_bold_font);
+		BString text(fTitle);
+		text.Append(": ");
+		owner->DrawString(text);
+		float stringWidth = owner->StringWidth(text);
+		owner->PopState();
+		owner->MovePenBy(stringWidth, 0);
+	}
 	owner->DrawString(fContent);
 }
 

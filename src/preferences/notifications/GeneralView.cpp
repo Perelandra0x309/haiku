@@ -24,6 +24,7 @@
 #include <Path.h>
 #include <Query.h>
 #include <Roster.h>
+#include <SeparatorView.h>
 #include <String.h>
 #include <StringView.h>
 #include <SymLink.h>
@@ -76,23 +77,25 @@ GeneralView::GeneralView(SettingsHost* host)
 	// TODO: Here will come a screen representation with the four corners
 	// clickable
 
-	BLayoutBuilder::Group<>(this, B_VERTICAL)
-		.SetInsets(B_USE_WINDOW_SPACING)
-		.AddGroup(B_HORIZONTAL)
-			.Add(fNotificationBox)
-			.AddGlue()
-		.End()
-		.AddGroup(B_HORIZONTAL)
-			.Add(fWindowWidth)
-			.AddGlue()
-		.End()
-		.AddGroup(B_HORIZONTAL)
-			.Add(fIconSizeField)
-			.AddGlue()
-		.End()
-		.AddGroup(B_HORIZONTAL, 4)
-			.Add(fTimeout)
-			.Add(displayTimeLabel)
+	BLayoutBuilder::Group<>(this, B_VERTICAL, 0)
+		.AddGroup(B_VERTICAL)
+			.SetInsets(B_USE_WINDOW_SPACING)
+			.AddGroup(B_HORIZONTAL)
+				.Add(fNotificationBox)
+				.AddGlue()
+			.End()
+			.AddGroup(B_HORIZONTAL)
+				.Add(fWindowWidth)
+				.AddGlue()
+			.End()
+			.AddGroup(B_HORIZONTAL)
+				.Add(fIconSizeField)
+				.AddGlue()
+			.End()
+			.AddGroup(B_HORIZONTAL, 4)
+				.Add(fTimeout)
+				.Add(displayTimeLabel)
+			.End()
 		.End()
 		.AddGlue()
 	.End();

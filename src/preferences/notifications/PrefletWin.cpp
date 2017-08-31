@@ -14,7 +14,6 @@
 #include <Button.h>
 #include <Catalog.h>
 #include <FindDirectory.h>
-#include <LayoutBuilder.h>
 #include <Path.h>
 #include <SeparatorView.h>
 
@@ -48,15 +47,25 @@ PrefletWin::PrefletWin()
 	fRevert->SetEnabled(false);
 
 	// Build the layout
-	BLayoutBuilder::Group<>(this, B_VERTICAL, 0)
-		.SetInsets(0, B_USE_DEFAULT_SPACING, 0, 0)
-		.Add(fMainView)
+	fRevertView = new BGroupView();
+	BLayoutBuilder::Group<>(fRevertView, B_VERTICAL, 0)
 		.Add(new BSeparatorView(B_HORIZONTAL))
 		.AddGroup(B_HORIZONTAL)
 			.Add(fRevert)
 			.AddGlue()
 			.SetInsets(B_USE_WINDOW_SPACING, B_USE_DEFAULT_SPACING,
-				B_USE_WINDOW_SPACING, B_USE_WINDOW_SPACING);
+				B_USE_WINDOW_SPACING, B_USE_WINDOW_SPACING)
+		.End();
+	fRevertLayout = fRevertView->GroupLayout();
+	
+	BLayoutBuilder::Group<>(this, B_VERTICAL, 0)
+		.SetInsets(0, B_USE_DEFAULT_SPACING, 0, 0)
+		.Add(fMainView)
+		.Add(fRevertView)
+	.End();
+	BRect frame = Frame();
+//	SetSizeLimits(frame.Width(), B_SIZE_UNLIMITED, frame.Height(), B_SIZE_UNLIMITED);
+	fMainView->SetExplicitMinSize(BSize(frame.Width(), frame.Height()));
 
 	ReloadSettings();
 
@@ -113,6 +122,11 @@ PrefletWin::MessageReceived(BMessage* msg)
 			_Revert();
 			PostMessage(kApply);
 			break;
+		case kShowRevert: {
+			bool show = msg->GetBool(kShowRevertKey, true);
+			fRevertLayout->SetVisible(show);
+			break;
+		}
 		default:
 			BWindow::MessageReceived(msg);
 	}

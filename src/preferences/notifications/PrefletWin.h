@@ -7,6 +7,8 @@
 #define _PREFLET_WIN_H
 
 
+#include <GroupView.h>
+#include <LayoutBuilder.h>
 #include <Message.h>
 #include <Window.h>
 
@@ -31,7 +33,9 @@ private:
 			bool			_RevertPossible();
 			
 			PrefletView*	fMainView;
+			BGroupView*		fRevertView;
 			BButton*		fRevert;
+			BGroupLayout*	fRevertLayout;
 };
 
 #endif // _PREFLET_WIN_H
