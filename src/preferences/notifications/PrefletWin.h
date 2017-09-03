@@ -31,11 +31,14 @@ public:
 private:
 			status_t		_Revert();
 			bool			_RevertPossible();
+			status_t		_Defaults();
+			bool			_DefaultsPossible();
 			
 			PrefletView*	fMainView;
-			BGroupView*		fRevertView;
+			BGroupView*		fButtonsView;
+			BButton*		fDefaults;
 			BButton*		fRevert;
-			BGroupLayout*	fRevertLayout;
+			BGroupLayout*	fButtonsLayout;
 };
 
 #endif // _PREFLET_WIN_H

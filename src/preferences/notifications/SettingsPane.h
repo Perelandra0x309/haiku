@@ -24,6 +24,8 @@ public:
 	virtual	status_t		Save(BMessage&) = 0;
 	virtual	status_t		Revert() = 0;
 	virtual bool			RevertPossible() = 0;
+	virtual status_t		Defaults() = 0;
+	virtual bool			DefaultsPossible() = 0;
 
 protected:
 			SettingsHost*	fHost;

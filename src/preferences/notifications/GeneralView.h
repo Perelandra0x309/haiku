@@ -12,8 +12,13 @@
 #include <Menu.h>
 #include <MenuField.h>
 #include <Mime.h>
+#include <RadioButton.h>
+#include <Slider.h>
+#include <StringView.h>
 #include <TextControl.h>
 
+#include "DateTimeEdit.h"
+#include "ScreenCornerSelector.h"
 #include "SettingsPane.h"
 
 class GeneralView : public SettingsPane {
@@ -28,20 +33,40 @@ public:
 			status_t		Save(BMessage&);
 			status_t		Revert();
 			bool			RevertPossible();
+			status_t		Defaults();
+			bool			DefaultsPossible();
 
 private:
 		BCheckBox*			fNotificationBox;
+//		BRadioButton*		fStatusEnabled;
+//		BRadioButton*		fStatusDisabled;
 //		BCheckBox*			fAutoStart;
-		BTextControl*		fTimeout;
+//		BTextControl*		fTimeout;
+//		BStringView*		fDisplayTimeLabel;
+		BSlider*			fDurationSlider;
 //		BCheckBox*			fHideAll;
-		BTextControl*		fWindowWidth;
-		BMenu*				fIconSize;
-		BMenuField*			fIconSizeField;
+//		BTextControl*		fWindowWidth;
+//		BStringView*		fWidthLabel;
+		BSlider*			fWidthSlider;
+		BCheckBox*			fDoNotDisturb;
+		BTextControl*		fDNDFrom;
+		BTextControl*		fDNDTo;
+		TTimeEdit*			fFromTimeEdit;
+		TTimeEdit*			fToTimeEdit;
+//		BMenu*				fIconSize;
+//		BMenuField*			fIconSizeField;
+//		BRadioButton*		fMiniSize;
+//		BRadioButton*		fLargeSize;
+		ScreenCornerSelector* fCornerSelector;
 		
 		int32				fOriginalTimeout;
 		float				fOriginalWidth;
 		icon_size			fOriginalIconSize;
 
+		void				_EnableControls();
+		void				_SendSampleNotification();
+		void				_SetWidthLabel(int32 value);
+		void				_SetTimeoutLabel(int32 value);
 		bool				_CanFindServer(entry_ref* ref);
 		bool				_IsServerRunning();
 };

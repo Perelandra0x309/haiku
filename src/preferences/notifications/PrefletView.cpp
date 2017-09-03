@@ -89,8 +89,10 @@ PrefletView::Select(int32 index)
 
 	BTabView::Select(index);
 
-	bool showRevert = index != (CountPages() - 1);
-	BMessage showMessage(kShowRevert);
-	showMessage.AddBool(kShowRevertKey, showRevert);
+	SettingsPane* pane =
+					dynamic_cast<SettingsPane*>(PageAt(index));
+	bool showButtons = pane != NULL;
+	BMessage showMessage(kShowButtons);
+	showMessage.AddBool(kShowButtonsKey, showButtons);
 	Window()->PostMessage(&showMessage);
 }

@@ -1,8 +1,10 @@
 SubDir HAIKU_TOP src preferences notifications ;
 
 UseHeaders [ FDirName $(HAIKU_TOP) src servers notification ] : true ;
+UseHeaders [ FDirName $(HAIKU_TOP) src preferences time ] : true ;
+UseHeaders [ FDirName $(HAIKU_TOP) src preferences screensaver ] : true ;
 
-UsePrivateHeaders shared interface notification ;
+UsePrivateHeaders shared interface notification screen_saver ;
 
 Application Notifications :
 	Notifications.cpp
@@ -14,6 +16,9 @@ Application Notifications :
 	NotificationListItem.cpp
 	../../servers/notification/NotificationView.cpp
 	../../servers/notification/AppGroupView.cpp
+	../time/DateTimeEdit.cpp
+	../time/SectionEdit.cpp
+	../screensaver/ScreenCornerSelector.cpp
 	: be translation libcolumnlistview.a libnotification.a [ TargetLibstdc++ ] localestub
 	: Notifications.rdef
 ;

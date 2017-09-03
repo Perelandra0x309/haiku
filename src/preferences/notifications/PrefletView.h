@@ -12,8 +12,8 @@ class BIconRule;
 
 class SettingsHost;
 
-const int32 kShowRevert = '_SHR';
-#define kShowRevertKey "showRevert"
+const int32 kShowButtons = '_SHR';
+#define kShowButtonsKey "showButtons"
 
 class PrefletView : public BTabView {
 public:

@@ -26,13 +26,14 @@
 #define B_TRANSLATION_CONTEXT "PrefletWin"
 
 
+const int32 kDefaults = '_DFT';
 const int32 kRevert = '_RVT';
 const int32 kApply = '_APY';
 
 
 PrefletWin::PrefletWin()
 	:
-	BWindow(BRect(0, 0, 500, 400), B_TRANSLATE_SYSTEM_NAME("Notifications"),
+	BWindow(BRect(0, 0, 400, 400), B_TRANSLATE_SYSTEM_NAME("Notifications"),
 		B_TITLED_WINDOW, B_NOT_ZOOMABLE | B_ASYNCHRONOUS_CONTROLS
 		| B_AUTO_UPDATE_SIZE_LIMITS)
 {
@@ -41,27 +42,32 @@ PrefletWin::PrefletWin()
 	fMainView->SetBorder(B_NO_BORDER);
 	fMainView->SetExplicitMaxSize(BSize(B_SIZE_UNLIMITED, B_SIZE_UNSET));
 
+	// Defaults button
+	fDefaults = new BButton("defaults", B_TRANSLATE("Defaults"),
+		new BMessage(kDefaults));
+	fDefaults->SetEnabled(false);
+
 	// Revert button
 	fRevert = new BButton("revert", B_TRANSLATE("Revert"),
 		new BMessage(kRevert));
 	fRevert->SetEnabled(false);
 
 	// Build the layout
-	fRevertView = new BGroupView();
-	BLayoutBuilder::Group<>(fRevertView, B_VERTICAL, 0)
-		.Add(new BSeparatorView(B_HORIZONTAL))
+	fButtonsView = new BGroupView();
+	BLayoutBuilder::Group<>(fButtonsView, B_VERTICAL, 0)
 		.AddGroup(B_HORIZONTAL)
+			.Add(fDefaults)
 			.Add(fRevert)
 			.AddGlue()
-			.SetInsets(B_USE_WINDOW_SPACING, B_USE_DEFAULT_SPACING,
+			.SetInsets(B_USE_WINDOW_SPACING, 0,
 				B_USE_WINDOW_SPACING, B_USE_WINDOW_SPACING)
 		.End();
-	fRevertLayout = fRevertView->GroupLayout();
+	fButtonsLayout = fButtonsView->GroupLayout();
 	
 	BLayoutBuilder::Group<>(this, B_VERTICAL, 0)
 		.SetInsets(0, B_USE_DEFAULT_SPACING, 0, 0)
 		.Add(fMainView)
-		.Add(fRevertView)
+		.Add(fButtonsView)
 	.End();
 	BRect frame = Frame();
 //	SetSizeLimits(frame.Width(), B_SIZE_UNLIMITED, frame.Height(), B_SIZE_UNLIMITED);
@@ -95,8 +101,10 @@ PrefletWin::MessageReceived(BMessage* msg)
 				SettingsPane* pane =
 					dynamic_cast<SettingsPane*>(fMainView->PageAt(i));
 				if (pane) {
-					if (pane->Save(settingsStore) == B_OK)
+					if (pane->Save(settingsStore) == B_OK) {
+						fDefaults->SetEnabled(_DefaultsPossible());
 						fRevert->SetEnabled(_RevertPossible());
+					}
 					else
 						break;
 				}
@@ -117,14 +125,19 @@ PrefletWin::MessageReceived(BMessage* msg)
 
 			break;
 		}
+		case kDefaults:
+			fDefaults->SetEnabled(false);
+			_Defaults();
+			PostMessage(kApply);
+			break;
 		case kRevert:
 			fRevert->SetEnabled(false);
 			_Revert();
 			PostMessage(kApply);
 			break;
-		case kShowRevert: {
-			bool show = msg->GetBool(kShowRevertKey, true);
-			fRevertLayout->SetVisible(show);
+		case kShowButtons: {
+			bool show = msg->GetBool(kShowButtonsKey, true);
+			fButtonsLayout->SetVisible(show);
 			break;
 		}
 		default:
@@ -169,6 +182,7 @@ PrefletWin::ReloadSettings()
 		if (pane)
 			pane->Load(settings);
 	}
+	fDefaults->SetEnabled(_DefaultsPossible());
 }
 
 
@@ -192,6 +206,32 @@ PrefletWin::_RevertPossible()
 		SettingsPane* pane =
 			dynamic_cast<SettingsPane*>(fMainView->PageAt(i));
 		if (pane && pane->RevertPossible())
+			return true;
+	}
+	return false;
+}
+
+
+status_t
+PrefletWin::_Defaults()
+{
+	for (int32 i = 0; i < fMainView->CountPages(); i++) {
+		SettingsPane* pane =
+			dynamic_cast<SettingsPane*>(fMainView->PageAt(i));
+		if (pane)
+			pane->Defaults();
+	}
+	return B_OK;
+}
+
+
+bool
+PrefletWin::_DefaultsPossible()
+{
+	for (int32 i = 0; i < fMainView->CountPages(); i++) {
+		SettingsPane* pane =
+			dynamic_cast<SettingsPane*>(fMainView->PageAt(i));
+		if (pane && pane->DefaultsPossible())
 			return true;
 	}
 	return false;
