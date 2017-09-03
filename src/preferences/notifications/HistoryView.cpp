@@ -226,6 +226,8 @@ HistoryView::MessageReceived(BMessage* message)
 			int32 selectedIndex = fListView->CurrentSelection();
 			if(selectedIndex >= 0) {
 				NotificationListItem *selectedItem = (NotificationListItem*)(fListView->ItemAt(selectedIndex));
+				if (selectedItem->IsDateDivider())
+					break;
 				BMessage data = selectedItem->GetMessage();
 				BNotification* newNotification = new BNotification(&data);
 				NotificationView* newPreview = new NotificationView(
@@ -296,6 +298,10 @@ HistoryView::_PopulateNotifications(const char* group)
 		delete item;
 	}
 	
+	// TODO test date list item
+	NotificationListItem* testitem = new NotificationListItem("Yesterday");
+	fListView->AddItem(testitem);
+	
 	// Get archive from file based on group
 	BPath archivePath;
 	find_directory(B_USER_CACHE_DIRECTORY, &archivePath);
@@ -323,6 +329,12 @@ HistoryView::_PopulateNotifications(const char* group)
 		
 		NotificationListItem* item = new NotificationListItem(notificationData);
 		fListView->AddItem(item);
+		
+		// Todo testing
+		if (index == 2) {
+			NotificationListItem* testitem = new NotificationListItem("Today");
+			fListView->AddItem(testitem);
+		}
 	}
 }
 

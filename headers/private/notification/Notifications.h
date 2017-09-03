@@ -18,7 +18,7 @@ const uint32 kNotificationsArchive = 'nota';
 const uint32 kNotificationData = 'notd';
 const BString kNameNotificationData = "notification_data";
 const BString kNameNotificationMessage = "notification_message";
-const BString kNameWasShown = "was_shown";
+const BString kNameWasAllowed = "was_allowed";
 const BString kNameTimestamp = "timestamp";
 
 // Settings constants

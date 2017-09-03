@@ -15,11 +15,13 @@ class NotificationListItem : public BListItem
 {
 public:
 							NotificationListItem(BMessage& notificationData);
+							NotificationListItem(char* label);
 //							~NotificationListItem();
 	virtual void			DrawItem(BView *owner, BRect item_rect, bool complete = false);
 	virtual void			Update(BView *owner, const BFont *font);
 			status_t		InitStatus() { return fInitStatus; }
 			BMessage		GetMessage() { return fNotificationMessage; }
+			bool			IsDateDivider() { return fIsDateDivider; }
 
 private:
 	status_t				fInitStatus;
@@ -28,9 +30,10 @@ private:
 	BString					fTitle;
 	BString					fContent;
 	int32					fTimestamp;
-	bool					fWasShown;
+	bool					fWasAllowed;
 	float					fFontHeight, fFontAscent;
-
+	bool					fIsDateDivider;
+	BString					fDateLabel;
 };
 
 #endif

@@ -233,7 +233,7 @@ NotificationWindow::MessageReceived(BMessage* message)
 				file.Unset();
 				BMessage notificationData(kNotificationData);
 				notificationData.AddMessage(kNameNotificationMessage, message);
-				notificationData.AddBool(kNameWasShown, allow);
+				notificationData.AddBool(kNameWasAllowed, allow);
 				notificationData.AddInt32(kNameTimestamp, time(NULL));
 				archive.AddMessage(kNameNotificationData, &notificationData);
 				file.SetTo(path.Path(), B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE);

@@ -10,7 +10,8 @@
 NotificationListItem::NotificationListItem(BMessage& notificationData)
 	:
 	BListItem(),
-	fInitStatus(B_ERROR)
+	fInitStatus(B_ERROR),
+	fIsDateDivider(false)
 {
 	status_t result = notificationData.FindMessage(kNameNotificationMessage, &fNotificationMessage);
 	if (result != B_OK)
@@ -24,12 +25,25 @@ NotificationListItem::NotificationListItem(BMessage& notificationData)
 	if (result != B_OK)
 		return;
 
-	result = notificationData.FindBool(kNameWasShown, &fWasShown);
+	result = notificationData.FindBool(kNameWasAllowed, &fWasAllowed);
 	if (result != B_OK)
 		return;
 
 	fInitStatus = B_OK;
 }
+
+
+NotificationListItem::NotificationListItem(char* label)
+	:
+	BListItem(),
+	fInitStatus(B_ERROR),
+	fIsDateDivider(true),
+	fDateLabel(label)
+{
+	
+	fInitStatus = B_OK;
+}
+
 
 /*
 NotificationListItem::~NotificationListItem()
@@ -41,46 +55,77 @@ NotificationListItem::~NotificationListItem()
 void
 NotificationListItem::DrawItem(BView *owner, BRect item_rect, bool complete)
 {
-	float offset_width = 0, offset_height = fFontAscent;
-//	float listItemHeight = Height();
-	rgb_color backgroundColor;
-
-	//background
-	if(IsSelected()) {
-		if(owner->IsFocus())
-			backgroundColor = ui_color(B_LIST_SELECTED_BACKGROUND_COLOR);
-		else
-			backgroundColor = ui_color(B_LIST_BACKGROUND_COLOR);
+	owner->PushState();
+	
+	float offset_height = fFontAscent;
+	
+	if (fIsDateDivider) {
+		// Background
+		owner->SetHighColor(ui_color(B_LIST_BACKGROUND_COLOR));
+		owner->SetLowColor(ui_color(B_LIST_BACKGROUND_COLOR));
+		owner->FillRect(item_rect);
+		
+		// Round rectangle
+		owner->SetHighColor(ui_color(B_LIST_SELECTED_BACKGROUND_COLOR));
+		owner->SetLowColor(ui_color(B_LIST_SELECTED_BACKGROUND_COLOR));
+		float xyRadius = (Height() - 2) / 2.0;
+		float stringWidth = be_plain_font->StringWidth(fDateLabel);
+		float listWidth;
+		owner->GetPreferredSize(&listWidth, NULL);
+		BRect roundRect(item_rect);
+		roundRect.InsetBy((listWidth - stringWidth - (2 * xyRadius) ) / 2.0, 1);
+		owner->FillRoundRect(roundRect, xyRadius, xyRadius);
+		
+		// Text
+		owner->SetHighColor(ui_color(B_LIST_SELECTED_ITEM_TEXT_COLOR));
+		owner->MovePenTo(roundRect.left + xyRadius + 1, roundRect.top + offset_height - 1);
+		owner->DrawString(fDateLabel);
 	}
 	else {
-		backgroundColor = ui_color(B_LIST_BACKGROUND_COLOR);
-	}
-	owner->SetHighColor(backgroundColor);
-	owner->SetLowColor(backgroundColor);
-	owner->FillRect(item_rect);
-
-	//text
-//	if(listItemHeight > fTextOnlyHeight)
-//		offset_height += floor( (listItemHeight - fTextOnlyHeight)/2 );
-			// center the text vertically
-	BPoint cursor(item_rect.left + offset_width, item_rect.top + offset_height /*+ kTextMargin*/);
-	if(IsSelected())
-		owner->SetHighColor(ui_color(B_LIST_SELECTED_ITEM_TEXT_COLOR));
-	else
-		owner->SetHighColor(ui_color(B_LIST_ITEM_TEXT_COLOR));
-	owner->MovePenTo(cursor.x, cursor.y);
+	//	float listItemHeight = Height();
+		rgb_color backgroundColor;
 	
-	if (fTitle.Length() > 0) {
-		owner->PushState();
-		owner->SetFont(be_bold_font);
-		BString text(fTitle);
-		text.Append(": ");
-		owner->DrawString(text);
-		float stringWidth = owner->StringWidth(text);
-		owner->PopState();
-		owner->MovePenBy(stringWidth, 0);
+		//background
+		if(IsSelected()) {
+			if(owner->IsFocus())
+				backgroundColor = ui_color(B_LIST_SELECTED_BACKGROUND_COLOR);
+			else
+				backgroundColor = ui_color(B_LIST_BACKGROUND_COLOR);
+		}
+		else {
+			backgroundColor = ui_color(B_LIST_BACKGROUND_COLOR);
+		}
+		owner->SetHighColor(backgroundColor);
+		owner->SetLowColor(backgroundColor);
+		owner->FillRect(item_rect);
+	
+		//text
+	//	if(listItemHeight > fTextOnlyHeight)
+	//		offset_height += floor( (listItemHeight - fTextOnlyHeight)/2 );
+				// center the text vertically
+		BPoint cursor(item_rect.left, item_rect.top + offset_height /*+ kTextMargin*/);
+		if(IsSelected())
+			owner->SetHighColor(ui_color(B_LIST_SELECTED_ITEM_TEXT_COLOR));
+		else
+			owner->SetHighColor(ui_color(B_LIST_ITEM_TEXT_COLOR));
+		owner->MovePenTo(cursor.x, cursor.y);
+		
+		if (fTitle.Length() > 0) {
+			owner->PushState();
+			BFont ownerFont;
+			owner->GetFont(&ownerFont);
+			ownerFont.SetFace(B_BOLD_FACE);
+			owner->SetFont(&ownerFont, B_FONT_FACE);
+			BString text(fTitle);
+			text.Append(": ");
+			owner->DrawString(text);
+			float stringWidth = owner->StringWidth(text);
+			owner->PopState();
+			owner->MovePenBy(stringWidth, 0);
+		}
+		owner->DrawString(fContent);
 	}
-	owner->DrawString(fContent);
+	owner->PopState();
 }
 
 
@@ -93,3 +138,5 @@ NotificationListItem::Update(BView *owner, const BFont *font)
 	fFontHeight = fontHeight.ascent + fontHeight.descent + fontHeight.leading;
 	fFontAscent = fontHeight.ascent;
 }
+
+// TODO frame resized to redraw date list items centered correctly
