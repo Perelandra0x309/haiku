@@ -38,25 +38,13 @@ public:
 
 private:
 		BCheckBox*			fNotificationBox;
-//		BRadioButton*		fStatusEnabled;
-//		BRadioButton*		fStatusDisabled;
-//		BCheckBox*			fAutoStart;
-//		BTextControl*		fTimeout;
-//		BStringView*		fDisplayTimeLabel;
 		BSlider*			fDurationSlider;
-//		BCheckBox*			fHideAll;
-//		BTextControl*		fWindowWidth;
-//		BStringView*		fWidthLabel;
 		BSlider*			fWidthSlider;
 		BCheckBox*			fDoNotDisturb;
 		BTextControl*		fDNDFrom;
 		BTextControl*		fDNDTo;
 		TTimeEdit*			fFromTimeEdit;
 		TTimeEdit*			fToTimeEdit;
-//		BMenu*				fIconSize;
-//		BMenuField*			fIconSizeField;
-//		BRadioButton*		fMiniSize;
-//		BRadioButton*		fLargeSize;
 		ScreenCornerSelector* fCornerSelector;
 		
 		int32				fOriginalTimeout;
