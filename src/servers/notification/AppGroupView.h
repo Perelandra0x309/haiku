@@ -47,6 +47,7 @@ private:
 			bool				fCollapsed;
 			BRect				fCloseRect;
 			BRect				fCollapseRect;
+			float				fHeaderSize;
 			bool				fCloseClicked;
 			bool				fPreviewModeOn;
 };

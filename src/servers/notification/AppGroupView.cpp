@@ -23,9 +23,6 @@
 #include "NotificationView.h"
 
 
-static const int kHeaderSize = 23;
-
-
 AppGroupView::AppGroupView(const BMessenger& messenger, const char* label)
 	:
 	BGroupView("appGroup", B_VERTICAL, 0),
@@ -37,7 +34,9 @@ AppGroupView::AppGroupView(const BMessenger& messenger, const char* label)
 {
 	SetFlags(Flags() | B_WILL_DRAW);
 
-	static_cast<BGroupLayout*>(GetLayout())->SetInsets(0, kHeaderSize, 0, 0);
+	fHeaderSize = be_plain_font->Size()
+		+ be_control_look->ComposeSpacing(B_USE_ITEM_SPACING);
+	static_cast<BGroupLayout*>(GetLayout())->SetInsets(0, fHeaderSize, 0, 0);
 }
 
 
@@ -48,7 +47,7 @@ AppGroupView::Draw(BRect updateRect)
 	BRect bounds = Bounds();
 	rgb_color hilite = tint_color(menuColor, B_DARKEN_1_TINT);
 	rgb_color vlight = tint_color(menuColor, B_LIGHTEN_2_TINT);
-	bounds.bottom = bounds.top + kHeaderSize;
+	bounds.bottom = bounds.top + fHeaderSize;
 
 	// Draw the header background
 	SetHighColor(tint_color(menuColor, 1.22));
@@ -61,13 +60,13 @@ AppGroupView::Draw(BRect updateRect)
 		0, borders);
 
 	// Draw the buttons
-	fCollapseRect.top = (kHeaderSize - kExpandSize) / 2;
+	fCollapseRect.top = (fHeaderSize - kExpandSize) / 2;
 	fCollapseRect.left = kEdgePadding * 3;
 	fCollapseRect.right = fCollapseRect.left + 1.5 * kExpandSize;
 	fCollapseRect.bottom = fCollapseRect.top + kExpandSize;
 
 	fCloseRect = bounds;
-	fCloseRect.top = (kHeaderSize - kCloseSize) / 2;
+	fCloseRect.top = (fHeaderSize - kCloseSize) / 2;
 	// Take off the 1 to line this up with the close button on the
 	// notification view
 	fCloseRect.right -= kEdgePadding * 3 - 1;
@@ -90,7 +89,9 @@ AppGroupView::Draw(BRect updateRect)
 	if (fCollapsed)
 		label << " (" << fInfo.size() << ")";
 
-	SetFont(be_bold_font);
+	BFont boldFont(be_plain_font);
+	boldFont.SetFace(B_BOLD_FACE);
+	SetFont(&boldFont);
 	font_height fontHeight;
 	GetFontHeight(&fontHeight);
 	float y = (bounds.top + bounds.bottom - ceilf(fontHeight.ascent)

@@ -244,13 +244,22 @@ NotificationsView::MessageReceived(BMessage* msg)
 				fApplications->DeselectAll();
 				fApplications->AddToSelection(row);
 				fApplications->ScrollTo(row);
+				_UpdateSelectedItem();
+				_RecallItemSettings();
 				//row->Invalidate();
 				//fApplications->InvalidateRow(row);
 				// TODO redraw row
 			//	Window()->Unlock();
 				Window()->PostMessage(kApply);
 			}
-	//		else (new BAlert("",B_TRANSLATE_COMMENT("Executable does not have an application signature", "Alert message"),"OK"))->Go();
+			else {
+				BAlert* alert = new BAlert("",
+					B_TRANSLATE_COMMENT("Application does not have "
+						"a valid signature", "Alert message"),
+					B_TRANSLATE("OK"), NULL, NULL, B_WIDTH_AS_USUAL,
+					B_WARNING_ALERT);
+				alert->Go();
+			}
 			delete[] buf;
 			break;
 		}

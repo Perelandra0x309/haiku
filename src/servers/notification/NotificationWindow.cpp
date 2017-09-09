@@ -503,8 +503,10 @@ NotificationWindow::_LoadAppFilters(BMessage& settings)
 
 	for (int32 i = 0; i < count; i++) {
 		AppUsage* app = new AppUsage();
-		settings.FindFlat("app_usage", i, app);
-		fAppFilters[app->Signature()] = app;
+		if (settings.FindFlat("app_usage", i, app) == B_OK)
+			fAppFilters[app->Signature()] = app;
+		else
+			delete app;
 	}
 }
 
