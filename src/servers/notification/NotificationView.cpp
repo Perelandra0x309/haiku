@@ -60,7 +60,7 @@ NotificationView::NotificationView(BNotification* notification, bigtime_t timeou
 	BView("NotificationView", B_WILL_DRAW),
 //	fParent(win),
 	fNotification(notification),
-	fTimeout(timeout * 1000000),
+	fTimeout(timeout),
 	fIconSize(iconSize),
 	fDisableTimeout(disableTimeout),
 	fRunner(NULL),

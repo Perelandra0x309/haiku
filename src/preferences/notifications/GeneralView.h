@@ -35,6 +35,7 @@ public:
 			bool			RevertPossible();
 			status_t		Defaults();
 			bool			DefaultsPossible();
+			bool			UseDefaultRevertButtons();
 
 private:
 		BCheckBox*			fNotificationBox;

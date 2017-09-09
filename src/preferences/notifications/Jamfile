@@ -7,11 +7,13 @@ UseHeaders [ FDirName $(HAIKU_TOP) src preferences screensaver ] : true ;
 UsePrivateHeaders shared interface notification screen_saver ;
 
 Application Notifications :
+	AppRefFilter.cpp
 	Notifications.cpp
 	PrefletWin.cpp
 	PrefletView.cpp
 	SettingsPane.cpp
 	GeneralView.cpp
+	NotificationsView.cpp
 	HistoryView.cpp
 	NotificationListItem.cpp
 	../../servers/notification/NotificationView.cpp
@@ -19,7 +21,7 @@ Application Notifications :
 	../time/DateTimeEdit.cpp
 	../time/SectionEdit.cpp
 	../screensaver/ScreenCornerSelector.cpp
-	: be translation libcolumnlistview.a libnotification.a [ TargetLibstdc++ ] localestub
+	: be translation tracker libcolumnlistview.a libnotification.a [ TargetLibstdc++ ] localestub
 	: Notifications.rdef
 ;
 

@@ -48,8 +48,8 @@ public:
 	virtual	void					WorkspaceActivated(int32, bool);
 	virtual	void					FrameResized(float width, float height);
 	virtual	void					ScreenChanged(BRect frame, color_space mode);
-	virtual	BHandler*				ResolveSpecifier(BMessage*, int32, BMessage*,
-										int32, const char*);
+//	virtual	BHandler*				ResolveSpecifier(BMessage*, int32, BMessage*,
+//										int32, const char*);
 										
 			icon_size				IconSize();
 			int32					Timeout();
@@ -60,9 +60,9 @@ public:
 private:
 	friend class AppGroupView;
 
-			void					NotificationViewSwapped(
-										NotificationView* stale,
-										NotificationView* fresh);
+//			void					NotificationViewSwapped(
+//										NotificationView* stale,
+//										NotificationView* fresh);
 
 			void					SetPosition();
 			void					_LoadSettings(bool startMonitor = false);

@@ -38,6 +38,7 @@ public:
 								HistoryView();
 								~HistoryView();
 	virtual	void				AttachedToWindow();
+	virtual	void				FrameResized(float newWidth, float newHeight);
 	virtual	void				MessageReceived(BMessage* message);
 
 private:

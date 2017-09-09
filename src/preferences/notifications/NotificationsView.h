@@ -6,45 +6,81 @@
 #ifndef _APPS_VIEW_H
 #define _APPS_VIEW_H
 
+#include <FilePanel.h>
+#include <ColumnListView.h>
 #include <View.h>
 
 #include <notification/AppUsage.h>
 
+#include "AppRefFilter.h"
 #include "SettingsPane.h"
 
 typedef std::map<BString, AppUsage *> appusage_t;
 
+class BButton;
 class BCheckBox;
 class BTextControl;
-class BColumnListView;
 class BStringColumn;
 class BDateColumn;
+
+
+class AppRow : public BRow {
+public:
+								AppRow(const char* name,
+									const char* signature, bool allowed);
+
+			const char*			Name() const { return fName.String(); }
+			const char*			Signature() { return fSignature.String(); };
+			void				SetAllowed(bool allowed);
+			bool				Allowed() { return fAllowed; };
+			void				RefreshEnabledField();
+
+private:
+			BString				fName;
+			BString				fSignature;
+			bool				fAllowed;
+};
+
 
 class NotificationsView : public SettingsPane {
 public:
 								NotificationsView(SettingsHost* host);
+								~NotificationsView();
 
 	virtual	void				AttachedToWindow();
 	virtual	void				MessageReceived(BMessage* msg);
+			status_t			Revert();
+			bool				RevertPossible();
+			status_t			Defaults();
+			bool				DefaultsPossible();
+			bool				UseDefaultRevertButtons();
 
 private:
 			status_t			Load(BMessage&);
 			status_t			Save(BMessage&);
-			status_t			Revert() {return B_OK;} // FIXME implement this
+			void				_ClearItemSettings();
+			void				_UpdateSelectedItem();
+			void				_RecallItemSettings();
 			void				_PopulateApplications();
-			void				_Populate(AppUsage* usage);
+//			void				_Populate(AppUsage* usage);
 
 			appusage_t			fAppFilters;
+			AppRefFilter*		fPanelFilter;
+			BFilePanel*			fAddAppPanel;
+			BButton*			fAddButton;
+			BButton*			fRemoveButton;
 			BCheckBox*			fBlockAll;
-			BTextControl*		fSearch;
+//			BTextControl*		fSearch;
 			BColumnListView*	fApplications;
+			AppRow*				fSelectedRow;
 			BStringColumn*		fAppCol;
+//			BStringColumn*		fSignatureCol;
 			BStringColumn*		fAppEnabledCol;
-			BColumnListView*	fNotifications;
+/*			BColumnListView*	fNotifications;
 			BStringColumn*		fTitleCol;
 			BDateColumn*		fDateCol;
 			BStringColumn*		fTypeCol;
-			BStringColumn*		fAllowCol;
+			BStringColumn*		fAllowCol;*/
 };
 
 #endif // _APPS_VIEW_H

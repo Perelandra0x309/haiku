@@ -54,29 +54,42 @@ GeneralView::GeneralView(SettingsHost* host)
 		new BMessage(kToggleNotifications));
 
 	// Window width
+	int32 minWidth = int32(kMinimumWidth / kWidthStep);
+	int32 maxWidth = int32(kMaximumWidth / kWidthStep);
 	fWidthSlider = new BSlider("width", B_TRANSLATE("Window width:"),
-		new BMessage(kWidthChanged), 6, 20, B_HORIZONTAL);
+		new BMessage(kWidthChanged), minWidth, maxWidth, B_HORIZONTAL);
 	fWidthSlider->SetHashMarks(B_HASH_MARKS_BOTTOM);
-	fWidthSlider->SetHashMarkCount(15);
-	fWidthSlider->SetLimitLabels(B_TRANSLATE_COMMENT("300", "Slider low text"),
-						B_TRANSLATE_COMMENT("1000", "Slider high text"));
+	fWidthSlider->SetHashMarkCount(maxWidth - minWidth + 1);
+	BString minWidthLabel;
+	minWidthLabel << int32(kMinimumWidth);
+	BString maxWidthLabel;
+	maxWidthLabel << int32(kMaximumWidth);
+	fWidthSlider->SetLimitLabels(
+		B_TRANSLATE_COMMENT(minWidthLabel.String(), "Slider low text"),
+		B_TRANSLATE_COMMENT(maxWidthLabel.String(), "Slider high text"));
 
 	// Display time
 	fDurationSlider = new BSlider("duration", B_TRANSLATE("Duration:"),
-		new BMessage(kTimeoutChanged), 5, 60, B_HORIZONTAL);
+		new BMessage(kTimeoutChanged), kMinimumTimeout, kMaximumTimeout,
+		B_HORIZONTAL);
 	fDurationSlider->SetHashMarks(B_HASH_MARKS_BOTTOM);
-	fDurationSlider->SetHashMarkCount(56);
-	fDurationSlider->SetLimitLabels(B_TRANSLATE_COMMENT("5", "Slider low text"),
-						B_TRANSLATE_COMMENT("60", "Slider high text"));
+	fDurationSlider->SetHashMarkCount(kMaximumTimeout - kMinimumTimeout + 1);
+	BString minLabel;
+	minLabel << kMinimumTimeout;
+	BString maxLabel;
+	maxLabel << kMaximumTimeout;
+	fDurationSlider->SetLimitLabels(
+		B_TRANSLATE_COMMENT(minLabel.String(), "Slider low text"),
+		B_TRANSLATE_COMMENT(maxLabel.String(), "Slider high text"));
 
 	// Do not disturb
 	fDoNotDisturb = new BCheckBox("donotdisturb", B_TRANSLATE("Do not disturb:"),
 		new BMessage(kSettingChanged));
-	BStringView* fromTimeLabel = new BStringView("from_label",
-		B_TRANSLATE("From"));
+//	BStringView* fromTimeLabel = new BStringView("from_label",
+//		B_TRANSLATE("From"));
 	fFromTimeEdit = new TTimeEdit("timeEdit", 5);
-	BStringView* toTimeLabel = new BStringView("to_label",
-		B_TRANSLATE("To"));
+//	BStringView* toTimeLabel = new BStringView("to_label",
+//		B_TRANSLATE("To"));
 	fToTimeEdit = new TTimeEdit("timeEdit", 5);
 
 	// Default position
@@ -89,8 +102,8 @@ GeneralView::GeneralView(SettingsHost* host)
 	float aspectRatio = 4.0f / 3.0f;
 	float monitorWidth = monitorHeight * aspectRatio;
 	BRect monitorRect = BRect(0, 0, monitorWidth, monitorHeight);
-	BStringView* cornerLabel = new BStringView("corner_label",
-		B_TRANSLATE("Location:"));
+//	BStringView* cornerLabel = new BStringView("corner_label",
+//		B_TRANSLATE("Location:"));
 	fCornerSelector = new ScreenCornerSelector(monitorRect, "FadeNow",
 		NULL, B_FOLLOW_NONE);
 	
@@ -101,7 +114,7 @@ GeneralView::GeneralView(SettingsHost* host)
 		.SetInsets(B_USE_DEFAULT_SPACING)
 		.Add(fWidthSlider)
 		.Add(fDurationSlider)
-		.Add(fDoNotDisturb)
+	/*	.Add(fDoNotDisturb)
 		.AddGroup(B_HORIZONTAL)
 			.SetInsets(B_USE_DEFAULT_SPACING, 0, 0, 0)
 			.AddGrid()
@@ -117,7 +130,8 @@ GeneralView::GeneralView(SettingsHost* host)
 			.Add(cornerLabel, 0, 1)
 			.Add(fCornerSelector, 1, 1)
 			.AddGlue(0, 2, 2)
-		.End()
+		.End()*/
+		.AddGlue()
 		.View());
 	
 	BLayoutBuilder::Group<>(this, B_VERTICAL)
@@ -237,12 +251,16 @@ GeneralView::Load(BMessage& settings)
 {
 	fNotificationBox->SetValue(_IsServerRunning() ? B_CONTROL_ON : B_CONTROL_OFF);
 
-	if (settings.FindInt32(kTimeoutName, &fOriginalTimeout) != B_OK)
-		fOriginalTimeout = kDefaultTimeout;
-
-	if (settings.FindFloat(kWidthName, &fOriginalWidth) != B_OK)
+	if (settings.FindFloat(kWidthName, &fOriginalWidth) != B_OK
+		|| fOriginalWidth > kMaximumWidth
+		|| fOriginalWidth < kMinimumWidth)
 		fOriginalWidth = kDefaultWidth;
 
+	if (settings.FindInt32(kTimeoutName, &fOriginalTimeout) != B_OK
+		|| fOriginalTimeout > kMaximumTimeout
+		|| fOriginalTimeout < kMinimumTimeout)
+		fOriginalTimeout = kDefaultTimeout;
+// TODO need to save again if values outside allowed
 	int32 setting;
 	if (settings.FindInt32(kIconSizeName, &setting) != B_OK)
 		fOriginalIconSize = kDefaultIconSize;
@@ -272,6 +290,7 @@ GeneralView::Save(BMessage& settings)
 	settings.AddBool(kAutoStartName, autoStart);
 
 	int32 timeout = fDurationSlider->Value();
+		// Convert from seconds to microseconds
 	settings.AddInt32(kTimeoutName, timeout);
 
 	// TODO Use a % of screen width value instead?
@@ -344,6 +363,13 @@ GeneralView::DefaultsPossible()
 }
 
 
+bool
+GeneralView::UseDefaultRevertButtons()
+{
+	return true;
+}
+
+
 void
 GeneralView::_EnableControls()
 {
@@ -363,7 +389,7 @@ GeneralView::_SendSampleNotification()
 	notification.SetGroup(B_TRANSLATE("Notifications"));
 	notification.SetTitle(B_TRANSLATE("Notifications preflet sample"));
 	notification.SetContent(B_TRANSLATE("This is a test notification message"));
-	notification.Send();
+	notification.Send(fDurationSlider->Value() * 1000000);
 }
 
 

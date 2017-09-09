@@ -43,7 +43,6 @@ private:
 
 			BString				fLabel;
 			BMessenger			fMessenger;
-		//TODO	NotificationWindow*	fParent;
 			infoview_t			fInfo;
 			bool				fCollapsed;
 			BRect				fCloseRect;

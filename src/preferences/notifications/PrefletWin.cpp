@@ -19,16 +19,12 @@
 
 #include <notification/Notifications.h>
 
+#include "NotificationsConstants.h"
 #include "PrefletView.h"
 
 
 #undef B_TRANSLATION_CONTEXT
 #define B_TRANSLATION_CONTEXT "PrefletWin"
-
-
-const int32 kDefaults = '_DFT';
-const int32 kRevert = '_RVT';
-const int32 kApply = '_APY';
 
 
 PrefletWin::PrefletWin()

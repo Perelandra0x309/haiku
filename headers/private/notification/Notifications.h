@@ -27,18 +27,19 @@ extern const char* kSettingsFile;
 // General settings
 extern const char* kAutoStartName;
 extern const char* kTimeoutName;
-
-// General default settings
-const bool kDefaultAutoStart = true;
-const int32 kDefaultTimeout = 10;
-
-// Display settings
 extern const char* kWidthName;
 extern const char* kIconSizeName;
 extern const char* kLayoutName;
 
-// Display default settings
+// General default settings
+const bool kDefaultAutoStart = true;
+const int32 kDefaultTimeout = 10;
+const int32 kMinimumTimeout = 3;
+const int32 kMaximumTimeout = 30;
 const float kDefaultWidth = 300.0f;
+const float kMinimumWidth = 300.0f;
+const float kMaximumWidth = 1000.0f;
+const int32 kWidthStep = 50;
 const icon_size kDefaultIconSize = B_LARGE_ICON;
 
 #endif	// _NOTIFICATIONS_H

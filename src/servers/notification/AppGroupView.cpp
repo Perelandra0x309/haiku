@@ -216,17 +216,13 @@ AppGroupView::AddInfo(NotificationView* view)
 
 	if (id.Length() > 0) {
 		int32 children = fInfo.size();
-
 		for (int32 i = 0; i < children; i++) {
 			if (id == fInfo[i]->MessageID()) {
 				NotificationView* oldView = fInfo[i];
-		//TODO		fParent->NotificationViewSwapped(oldView, view);
 				oldView->RemoveSelf();
 				delete oldView;
-				
 				fInfo[i] = view;
 				found = true;
-				
 				break;
 			}
 		}

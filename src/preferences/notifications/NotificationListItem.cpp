@@ -138,5 +138,3 @@ NotificationListItem::Update(BView *owner, const BFont *font)
 	fFontHeight = fontHeight.ascent + fontHeight.descent + fontHeight.leading;
 	fFontAscent = fontHeight.ascent;
 }
-
-// TODO frame resized to redraw date list items centered correctly

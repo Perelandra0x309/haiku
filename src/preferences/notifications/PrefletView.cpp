@@ -18,7 +18,7 @@
 //#include "DisplayView.h"
 #include "GeneralView.h"
 #include "HistoryView.h"
-//#include "NotificationsView.h"
+#include "NotificationsView.h"
 #include "PrefletView.h"
 #include "SettingsHost.h"
 
@@ -37,8 +37,8 @@ PrefletView::PrefletView(SettingsHost* host)
 	// Pages
 	GeneralView* general = new GeneralView(host);
 //	DisplayView* display = new DisplayView(host);
-//	NotificationsView* apps = new NotificationsView(host);
-	HistoryView* history = new HistoryView();
+	NotificationsView* apps = new NotificationsView(host);
+//	HistoryView* history = new HistoryView();
 
 	// Page selector
 	BTab* tab = new BTab();
@@ -47,15 +47,15 @@ PrefletView::PrefletView(SettingsHost* host)
 
 /*	tab = new BTab();
 	AddTab(display, tab);
-	tab->SetLabel(B_TRANSLATE("Display"));
+	tab->SetLabel(B_TRANSLATE("Display"));*/
 
 	tab = new BTab();
 	AddTab(apps, tab);
-	tab->SetLabel(B_TRANSLATE("Notifications"));*/
+	tab->SetLabel(B_TRANSLATE("Applications"));
 	
-	tab = new BTab();
+/*	tab = new BTab();
 	AddTab(history, tab);
-	tab->SetLabel(B_TRANSLATE("History"));
+	tab->SetLabel(B_TRANSLATE("History"));*/
 }
 
 
@@ -91,7 +91,7 @@ PrefletView::Select(int32 index)
 
 	SettingsPane* pane =
 					dynamic_cast<SettingsPane*>(PageAt(index));
-	bool showButtons = pane != NULL;
+	bool showButtons = (pane != NULL) && pane->UseDefaultRevertButtons();
 	BMessage showMessage(kShowButtons);
 	showMessage.AddBool(kShowButtonsKey, showButtons);
 	Window()->PostMessage(&showMessage);

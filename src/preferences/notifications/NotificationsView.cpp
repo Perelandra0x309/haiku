@@ -8,6 +8,7 @@
  */
 
 #include <Alert.h>
+#include <Button.h>
 #include <Catalog.h>
 #include <CheckBox.h>
 #include <ColumnListView.h>
@@ -23,57 +24,103 @@
 #include <notification/Notifications.h>
 #include <notification/NotificationReceived.h>
 
+#include "NotificationsConstants.h"
 #include "NotificationsView.h"
 
 #undef B_TRANSLATION_CONTEXT
 #define B_TRANSLATION_CONTEXT "NotificationView"
 
-const float kEdgePadding = 5.0;
-const float kCLVTitlePadding = 8.0;
-
-const int32 kApplicationSelected = '_ASL';
-const int32 kNotificationSelected = '_NSL';
-
-const int32 kCLVDeleteRow = 'av02';
+//const int32 kCLVDeleteRow = 'av02';
 
 // Applications column indexes
-const int32 kAppIndex = 0;
+const int32 kAppNameIndex = 0;
+//const int32 kSignatureIndex = 1;
 const int32 kAppEnabledIndex = 1;
 
 // Notifications column indexes
-const int32 kDateIndex = 0;
-const int32 kTitleIndex = 1;
-const int32 kTypeIndex = 2;
-const int32 kAllowIndex = 3;
+//const int32 kDateIndex = 0;
+//const int32 kTitleIndex = 1;
+//const int32 kTypeIndex = 2;
+//const int32 kAllowIndex = 3;
+
+
+AppRow::AppRow(const char* name, const char* signature, bool allowed)
+	:
+	BRow(),
+	fName(name),
+	fSignature(signature),
+	fAllowed(allowed)
+{
+	SetField(new BStringField(fName.String()), kAppNameIndex);
+	BString text = fAllowed ? B_TRANSLATE("Allowed") : B_TRANSLATE("Muted");
+	SetField(new BStringField(text.String()), kAppEnabledIndex);
+}
+
+
+void
+AppRow::SetAllowed(bool allowed)
+{
+	fAllowed = allowed;
+	RefreshEnabledField();
+}
+
+
+void
+AppRow::RefreshEnabledField()
+{
+	BStringField* field = (BStringField*)GetField(kAppEnabledIndex);
+	BString text = fAllowed ? B_TRANSLATE("Allowed") : B_TRANSLATE("Muted");
+	field->SetString(text.String());
+	Invalidate();
+}
 
 
 NotificationsView::NotificationsView(SettingsHost* host)
 	:
-	SettingsPane("apps", host)
+	SettingsPane("apps", host),
+	fSelectedRow(NULL)
 {
 	BRect rect(0, 0, 100, 100);
 
 	// Search application field
-	fSearch = new BTextControl(B_TRANSLATE("Search:"), NULL,
-		new BMessage(kSettingChanged));
+//	fSearch = new BTextControl(B_TRANSLATE("Search:"), NULL,
+//		new BMessage(kSettingChanged));
 
 	// Applications list
 	fApplications = new BColumnListView(B_TRANSLATE("Applications"),
-		0, B_FANCY_BORDER, true);
+		0, B_FANCY_BORDER, false);
 	fApplications->SetSelectionMode(B_SINGLE_SELECTION_LIST);
+	fApplications->SetSelectionMessage(new BMessage(kApplicationSelected));
 
-	fAppCol = new BStringColumn(B_TRANSLATE("Application"), 200,
-		be_plain_font->StringWidth(B_TRANSLATE("Application")) +
-		(kCLVTitlePadding * 2), rect.Width(), B_TRUNCATE_END, B_ALIGN_LEFT);
-	fApplications->AddColumn(fAppCol, kAppIndex);
+	fAppCol = new BStringColumn(B_TRANSLATE("Application"), 200, 200, 400,
+	//	be_plain_font->StringWidth(B_TRANSLATE("Application")) +
+	//	(kCLVTitlePadding * 2), rect.Width(),
+		B_TRUNCATE_END, B_ALIGN_LEFT);
+	fApplications->AddColumn(fAppCol, kAppNameIndex);
 
-	fAppEnabledCol = new BStringColumn(B_TRANSLATE("Enabled"), 10,
-		be_plain_font->StringWidth(B_TRANSLATE("Enabled")) +
-		(kCLVTitlePadding * 2), rect.Width(), B_TRUNCATE_END, B_ALIGN_LEFT);
+//	fSignatureCol = new BStringColumn(B_TRANSLATE("Signature"), 200, 200, 400,
+	//	be_plain_font->StringWidth(B_TRANSLATE("Application")) +
+	//	(kCLVTitlePadding * 2), rect.Width(),
+//		B_TRUNCATE_END, B_ALIGN_LEFT);
+//	fApplications->AddColumn(fSignatureCol, kSignatureIndex);
+
+	fAppEnabledCol = new BStringColumn(B_TRANSLATE("Status"), 10,
+		be_plain_font->StringWidth(B_TRANSLATE("Status")) +
+		(kCLVTitlePadding * 4), rect.Width(), B_TRUNCATE_END, B_ALIGN_LEFT);
 	fApplications->AddColumn(fAppEnabledCol, kAppEnabledIndex);
+	fApplications->SetSortColumn(fAppCol, true, true);
+	
+	fAddButton = new BButton("add_app", B_TRANSLATE("Add" B_UTF8_ELLIPSIS),
+		new BMessage(kAddApplication));
+	fRemoveButton = new BButton("add_app", B_TRANSLATE("Remove"),
+		new BMessage(kRemoveApplication));
+	fRemoveButton->SetEnabled(false);
+	
+	fBlockAll = new BCheckBox("block", B_TRANSLATE("Mute notifications"),
+		new BMessage(kMuteChanged));
 
 	// Notifications list
-	fNotifications = new BColumnListView(B_TRANSLATE("Notifications"),
+/*	fNotifications = new BColumnListView(B_TRANSLATE("Notifications"),
 		0, B_FANCY_BORDER, true);
 	fNotifications->SetSelectionMode(B_SINGLE_SELECTION_LIST);
 
@@ -95,18 +142,37 @@ NotificationsView::NotificationsView(SettingsHost* host)
 	fAllowCol = new BStringColumn(B_TRANSLATE("Allowed"), 100,
 		be_plain_font->StringWidth(B_TRANSLATE("Allowed")) +
 		(kCLVTitlePadding * 2), rect.Width(), B_TRUNCATE_END, B_ALIGN_LEFT);
-	fNotifications->AddColumn(fAllowCol, kAllowIndex);
+	fNotifications->AddColumn(fAllowCol, kAllowIndex);*/
 
 	// Add views
 	BLayoutBuilder::Group<>(this, B_VERTICAL)
-		.AddGroup(B_HORIZONTAL)
+/*		.AddGroup(B_HORIZONTAL)
 			.AddGlue()
 			.Add(fSearch)
+		.End()*/
+		.AddGroup(B_HORIZONTAL)
+			.Add(fApplications)
+			.AddGroup(B_VERTICAL)
+				.Add(fAddButton)
+				.Add(fRemoveButton)
+				.AddGlue()
+			.End()
 		.End()
-		.Add(fApplications)
-		.Add(fNotifications)
+		.Add(fBlockAll)
+//		.Add(fNotifications)
 		.SetInsets(B_USE_WINDOW_SPACING, B_USE_WINDOW_SPACING,
 			B_USE_WINDOW_SPACING, B_USE_DEFAULT_SPACING);
+
+	//File Panel
+	fPanelFilter = new AppRefFilter();
+	fAddAppPanel = new BFilePanel(B_OPEN_PANEL, NULL, NULL, B_FILE_NODE, false, NULL, fPanelFilter);
+}
+
+
+NotificationsView::~NotificationsView()
+{
+	delete fAddAppPanel;
+	delete fPanelFilter;
 }
 
 
@@ -115,9 +181,14 @@ NotificationsView::AttachedToWindow()
 {
 	fApplications->SetTarget(this);
 	fApplications->SetInvocationMessage(new BMessage(kApplicationSelected));
+	fAddButton->SetTarget(this);
+	fRemoveButton->SetTarget(this);
+	fBlockAll->SetTarget(this);
+	fAddAppPanel->SetTarget(this);
+	_RecallItemSettings();
 
-	fNotifications->SetTarget(this);
-	fNotifications->SetInvocationMessage(new BMessage(kNotificationSelected));
+//	fNotifications->SetTarget(this);
+//	fNotifications->SetInvocationMessage(new BMessage(kNotificationSelected));
 
 #if 0
 	fNotifications->AddFilter(new BMessageFilter(B_ANY_DELIVERY,
@@ -132,22 +203,76 @@ NotificationsView::MessageReceived(BMessage* msg)
 	switch (msg->what) {
 		case kApplicationSelected:
 		{
-			BRow* row = fApplications->CurrentSelection();
-			if (row == NULL)
-				return;
-			BStringField* appName
-				= dynamic_cast<BStringField*>(row->GetField(kAppIndex));
-			if (appName == NULL)
-				break;
-
-			appusage_t::iterator it = fAppFilters.find(appName->String());
-			if (it != fAppFilters.end())
-				_Populate(it->second);
-
+			Window()->Lock();
+			_ClearItemSettings();
+			_UpdateSelectedItem();
+			_RecallItemSettings();
+			Window()->Unlock();
 			break;
 		}
-		case kNotificationSelected:
+		case kMuteChanged: {
+			bool allowed = fBlockAll->Value() == B_CONTROL_OFF;
+			fSelectedRow->SetAllowed(allowed);
+			appusage_t::iterator it = fAppFilters.find(fSelectedRow->Signature());
+			if (it != fAppFilters.end())
+				it->second->SetAllowed(allowed);
+			Window()->PostMessage(kApply);
 			break;
+		}
+		case kAddApplication: {
+			BMessage addmsg(kAddApplicationRef);
+			fAddAppPanel->SetMessage(&addmsg);
+			fAddAppPanel->Show();
+			break;
+		}
+		case kAddApplicationRef: {
+			entry_ref srcRef;
+			msg->FindRef("refs", &srcRef);
+			BEntry srcEntry(&srcRef, true);
+			BPath path(&srcEntry);
+			BNode node(&srcEntry);
+			char *buf = new char[B_ATTR_NAME_LENGTH];
+			ssize_t size;
+			if( (size = node.ReadAttr("BEOS:APP_SIG",0,0,buf,B_ATTR_NAME_LENGTH)) > 0 )
+			{
+				AppUsage* appUsage = new AppUsage(path.Leaf(), buf, true);
+				fAppFilters[appUsage->Signature()] = appUsage;
+		//		Window()->Lock();
+				AppRow* row = new AppRow(appUsage->AppName(),
+					appUsage->Signature(), appUsage->Allowed());
+				fApplications->AddRow(row);
+				fApplications->DeselectAll();
+				fApplications->AddToSelection(row);
+				fApplications->ScrollTo(row);
+				//row->Invalidate();
+				//fApplications->InvalidateRow(row);
+				// TODO redraw row
+			//	Window()->Unlock();
+				Window()->PostMessage(kApply);
+			}
+	//		else (new BAlert("",B_TRANSLATE_COMMENT("Executable does not have an application signature", "Alert message"),"OK"))->Go();
+			delete[] buf;
+			break;
+		}
+		case kRemoveApplication: {
+			if (fSelectedRow) {
+				appusage_t::iterator it = fAppFilters.find(fSelectedRow->Signature());
+				if (it != fAppFilters.end()) {
+					delete it->second;
+					fAppFilters.erase(it);
+				}
+				fApplications->RemoveRow(fSelectedRow);
+				delete fSelectedRow;
+				fSelectedRow = NULL;
+				_ClearItemSettings();
+				_UpdateSelectedItem();
+				_RecallItemSettings();
+				Window()->PostMessage(kApply);
+			}
+			break;
+		}
+//		case kNotificationSelected:
+//			break;
 		default:
 			BView::MessageReceived(msg);
 			break;
@@ -174,7 +299,7 @@ NotificationsView::Load(BMessage& settings)
 	for (int32 i = 0; i < count; i++) {
 		AppUsage* app = new AppUsage();
 		settings.FindFlat("app_usage", i, app);
-		fAppFilters[app->Name()] = app;
+		fAppFilters[app->Signature()] = app;
 	}
 
 	// Load the applications list
@@ -196,6 +321,78 @@ NotificationsView::Save(BMessage& storage)
 
 
 void
+NotificationsView::_ClearItemSettings()
+{
+	fBlockAll->SetValue(B_CONTROL_OFF);
+}
+
+
+void
+NotificationsView::_UpdateSelectedItem()
+{
+	fSelectedRow = dynamic_cast<AppRow*>(fApplications->CurrentSelection());
+	
+}
+
+
+void
+NotificationsView::_RecallItemSettings()
+{
+	//Enable or disable objects
+	if(fSelectedRow == NULL)//no selected item
+	{
+		fBlockAll->SetValue(B_CONTROL_OFF);
+		fBlockAll->SetEnabled(false);
+		fRemoveButton->SetEnabled(false);
+	}
+	else
+	{
+		fBlockAll->SetEnabled(true);
+		fRemoveButton->SetEnabled(true);
+		appusage_t::iterator it = fAppFilters.find(fSelectedRow->Signature());
+		if (it != fAppFilters.end()) {
+			fBlockAll->SetValue(!(it->second->Allowed()));
+		}
+	}
+}
+
+
+status_t
+NotificationsView::Revert()
+{
+	return B_OK;
+}
+
+
+bool
+NotificationsView::RevertPossible()
+{
+	return false;
+}
+
+
+status_t
+NotificationsView::Defaults()
+{
+	return B_OK;
+}
+
+
+bool
+NotificationsView::DefaultsPossible()
+{
+	return false;
+}
+
+
+bool
+NotificationsView::UseDefaultRevertButtons()
+{
+	return false;
+}
+
+
+void
 NotificationsView::_PopulateApplications()
 {
 	appusage_t::iterator it;
@@ -203,13 +400,14 @@ NotificationsView::_PopulateApplications()
 	fApplications->Clear();
 
 	for (it = fAppFilters.begin(); it != fAppFilters.end(); ++it) {
-		BRow* row = new BRow();
-		row->SetField(new BStringField(it->first.String()), kAppIndex);
+		AppUsage* appUsage = it->second;
+		AppRow* row = new AppRow(appUsage->AppName(),
+			appUsage->Signature(), appUsage->Allowed());
 		fApplications->AddRow(row);
 	}
 }
 
-
+/*
 void
 NotificationsView::_Populate(AppUsage* usage)
 {
@@ -256,4 +454,4 @@ NotificationsView::_Populate(AppUsage* usage)
 
 		fNotifications->AddRow(row);
 	}
-}
+}*/

@@ -26,6 +26,7 @@ public:
 	virtual bool			RevertPossible() = 0;
 	virtual status_t		Defaults() = 0;
 	virtual bool			DefaultsPossible() = 0;
+	virtual bool			UseDefaultRevertButtons() = 0;
 
 protected:
 			SettingsHost*	fHost;

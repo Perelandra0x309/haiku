@@ -21,15 +21,17 @@ const type_code kTypeCode = 'ipau';
 
 AppUsage::AppUsage()
 	:
-	fName(""),
+	fAppName(""),
+	fSignature(""),
 	fAllow(true)
 {
 }
 
 
-AppUsage::AppUsage(const char* name, bool allow)
+AppUsage::AppUsage(const char* name, const char* signature, bool allow)
 	:
-	fName(name),
+	fAppName(name),
+	fSignature(signature),
 	fAllow(allow)
 {	
 }
@@ -37,9 +39,9 @@ AppUsage::AppUsage(const char* name, bool allow)
 
 AppUsage::~AppUsage()
 {
-	notification_t::iterator nIt;
+/*	notification_t::iterator nIt;
 	for (nIt = fNotifications.begin(); nIt != fNotifications.end(); nIt++)
-		delete nIt->second;
+		delete nIt->second;*/
 }
 
 
@@ -54,12 +56,13 @@ status_t
 AppUsage::Flatten(void* buffer, ssize_t numBytes) const
 {
 	BMessage msg;
-	msg.AddString("signature", fName);
+	msg.AddString("name", fAppName);
+	msg.AddString("signature", fSignature);
 	msg.AddBool("allow", fAllow);
 
-	notification_t::const_iterator nIt;
+/*	notification_t::const_iterator nIt;
 	for (nIt = fNotifications.begin(); nIt != fNotifications.end(); nIt++)
-		msg.AddFlat("notification", nIt->second);
+		msg.AddFlat("notification", nIt->second);*/
 
 	if (numBytes < msg.FlattenedSize())
 		return B_ERROR;
@@ -72,12 +75,13 @@ ssize_t
 AppUsage::FlattenedSize() const
 {
 	BMessage msg;
-	msg.AddString("signature", fName);
+	msg.AddString("name", fAppName);
+	msg.AddString("signature", fSignature);
 	msg.AddBool("allow", fAllow);
-
+/*
 	notification_t::const_iterator nIt;
 	for (nIt = fNotifications.begin(); nIt != fNotifications.end(); nIt++)
-		msg.AddFlat("notification", nIt->second);
+		msg.AddFlat("notification", nIt->second);*/
 
 	return msg.FlattenedSize();
 }
@@ -110,10 +114,11 @@ AppUsage::Unflatten(type_code code, const void* buffer,
 	status = msg.Unflatten((const char*)buffer);
 
 	if (status == B_OK) {
-		msg.FindString("signature", &fName);
+		msg.FindString("name", &fAppName);
+		msg.FindString("signature", &fSignature);
 		msg.FindBool("allow", &fAllow);
 
-		type_code type;
+/*		type_code type;
 		int32 count = 0;
 
 		status = msg.GetInfo("notification", &type, &count);
@@ -126,7 +131,7 @@ AppUsage::Unflatten(type_code code, const void* buffer,
 			fNotifications[notification->Title()] = notification;
 		}
 
-		status = B_OK;
+		status = B_OK;*/
 	}
 	
 	return status;
@@ -134,12 +139,19 @@ AppUsage::Unflatten(type_code code, const void* buffer,
 
 						
 const char*
-AppUsage::Name()
+AppUsage::AppName()
 {
-	return fName.String();
+	return fAppName.String();
 }
 
 
+const char*
+AppUsage::Signature()
+{
+	return fSignature.String();
+}
+
+/*
 bool
 AppUsage::Allowed(const char* title, notification_type type)
 {
@@ -159,7 +171,7 @@ AppUsage::Allowed(const char* title, notification_type type)
 
 	return allowed;
 }
-
+*/
 
 bool
 AppUsage::Allowed()
@@ -168,6 +180,13 @@ AppUsage::Allowed()
 }
 
 
+void
+AppUsage::SetAllowed(bool allow)
+{
+	fAllow = allow;
+}
+
+/*
 NotificationReceived*
 AppUsage::NotificationAt(int32 index)
 {
@@ -191,3 +210,4 @@ AppUsage::AddNotification(NotificationReceived* notification)
 {
 	fNotifications[notification->Title()] = notification;
 }
+*/

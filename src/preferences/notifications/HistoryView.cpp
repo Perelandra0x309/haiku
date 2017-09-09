@@ -62,7 +62,7 @@ const float kSmallPadding			= 2;
 
 HistoryView::HistoryView()
 	:
-	BView("history", B_WILL_DRAW),
+	BView("history", B_WILL_DRAW | B_FRAME_EVENTS),
 	fShowingPreview(false),
 	fCurrentPreview(NULL)
 {
@@ -123,7 +123,7 @@ HistoryView::HistoryView()
 	
 	// Application list view
 	fListView = new BListView(rect, "Notification List View", B_SINGLE_SELECTION_LIST,
-								B_FOLLOW_ALL_SIDES, B_WILL_DRAW | B_FRAME_EVENTS);
+								B_FOLLOW_ALL_SIDES);
 	fScrollView = new BScrollView("List Scroll View", fListView, B_FOLLOW_ALL_SIDES, 0,
 								false, true);
 	
@@ -183,6 +183,14 @@ HistoryView::AttachedToWindow()
 #endif
 
 	_PopulateGroups();
+}
+
+
+void
+HistoryView::FrameResized(float newWidth, float newHeight)
+{
+	BView::FrameResized(newWidth, newHeight);
+	fListView->Invalidate();
 }
 
 
@@ -318,6 +326,7 @@ HistoryView::_PopulateNotifications(const char* group)
 		return;
 	
 	int32 index;
+	NotificationListItem* selectItem = NULL;
 	for (index = 0; index < count; index++) {
 		BMessage notificationData;
 		status_t result = archive.FindMessage(kNameNotificationData, index, &notificationData);
@@ -330,12 +339,22 @@ HistoryView::_PopulateNotifications(const char* group)
 		NotificationListItem* item = new NotificationListItem(notificationData);
 		fListView->AddItem(item);
 		
+		if (index == 0) {
+			selectItem = item;
+		//	fListView->Select(fListView->IndexOf(item));
+		//	fListView->ScrollToSelection();
+		}
+		
 		// Todo testing
 		if (index == 2) {
 			NotificationListItem* testitem = new NotificationListItem("Today");
 			fListView->AddItem(testitem);
 		}
 	}
+	if (selectItem)
+		fListView->Select(fListView->IndexOf(selectItem));
+//	fListView->Invalidate();
+//	Window()->UpdateIfNeeded();
 }
 
 

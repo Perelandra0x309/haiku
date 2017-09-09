@@ -134,7 +134,7 @@ NotificationWindow::MessageReceived(BMessage* message)
 			_LoadSettings();
 			break;
 		}
-		case B_COUNT_PROPERTIES:
+/*		case B_COUNT_PROPERTIES:
 		{
 			BMessage reply(B_REPLY);
 			BMessage specifier;
@@ -158,7 +158,7 @@ NotificationWindow::MessageReceived(BMessage* message)
 			message->SendReply(&reply);
 			break;
 		}
-		case B_CREATE_PROPERTY:
+		case B_CREATE_PROPERTY:*/
 		case kNotificationMessage:
 		{
 			BMessage reply(B_REPLY);
@@ -168,29 +168,50 @@ NotificationWindow::MessageReceived(BMessage* message)
 				bigtime_t timeout;
 				if (message->FindInt64("timeout", &timeout) != B_OK)
 					timeout = fTimeout;
-				BMessenger messenger = message->ReturnAddress();
+	/*			BMessenger messenger = message->ReturnAddress();
 				app_info info;
 
-				if (messenger.IsValid())
+				if (messenger.IsValid()) {
 					be_roster->GetRunningAppInfo(messenger.Team(), &info);
-				else
+					printf("Messenger valid, found sig %s\n", info.signature);
+				}
+				else {
 					be_roster->GetAppInfo("application/x-vnd.Haiku-Terminal", &info);
+					printf("Messenger not valid, using Terminal\n");
+				}*/
+	//			BString source(notification->Source());
+				BString sourceSignature(message->GetString("source_signature", ""));
+				BString sourceName(message->GetString("source_name", ""));
+				
+/*				if (sourceSignature.Compare("") != 0) {
+					printf("Source valid, found sig %s\n", sourceSignature.String());
+				}
+				else
+					printf("Source not valid\n");*/
 
 				bool allow = false;
-				appfilter_t::iterator it = fAppFilters.find(info.signature);
+				appfilter_t::iterator it = fAppFilters.find(sourceSignature.String());
+//				appfilter_t::iterator it = fAppFilters.find(info.signature);
 				
 				AppUsage* appUsage = NULL;
 				if (it == fAppFilters.end()) {
-					appUsage = new AppUsage(notification->Group(), true);
+					if (sourceSignature.Length() > 0
+						&& sourceName.Length() > 0) {
+						appUsage = new AppUsage(sourceName.String(),
+							sourceSignature.String(), true);
+					//appUsage = new AppUsage(path.Leaf(), info.signature, true);
 
-					appUsage->Allowed(notification->Title(),
-							notification->Type());
-					fAppFilters[info.signature] = appUsage;
+				//	appUsage->Allowed(notification->Title(),
+				//			notification->Type());
+					//fAppFilters[info.signature] = appUsage;
+						fAppFilters[sourceSignature.String()] = appUsage;
+						// TODO save back to settings file
+					}
 					allow = true;
 				} else {
 					appUsage = it->second;
-					allow = appUsage->Allowed(notification->Title(),
-						notification->Type());
+					allow = appUsage->Allowed();//notification->Title(),
+						//notification->Type());
 				}
 
 				if (allow) {
@@ -248,7 +269,7 @@ NotificationWindow::MessageReceived(BMessage* message)
 			message->SendReply(&reply);
 			break;
 		}
-		case kRemoveView:
+/*		case kRemoveView:
 		{
 			NotificationView* view = NULL;
 			if (message->FindPointer("view", (void**)&view) != B_OK)
@@ -259,7 +280,7 @@ NotificationWindow::MessageReceived(BMessage* message)
 			if (it != fViews.end())
 				fViews.erase(it);
 			break;
-		}
+		}*/
 		case kRemoveGroupView:
 		{
 			AppGroupView* view = NULL;
@@ -287,7 +308,7 @@ NotificationWindow::MessageReceived(BMessage* message)
 	}
 }
 
-
+/*
 BHandler*
 NotificationWindow::ResolveSpecifier(BMessage* msg, int32 index,
 	BMessage* spec, int32 form, const char* prop)
@@ -331,7 +352,7 @@ NotificationWindow::ResolveSpecifier(BMessage* msg, int32 index,
 		handler = BWindow::ResolveSpecifier(msg, index, spec, form, prop);
 
 	return handler;
-}
+}*/
 
 
 icon_size
@@ -369,7 +390,7 @@ NotificationWindow::_ShowHide()
 	}
 }
 
-
+/*
 void
 NotificationWindow::NotificationViewSwapped(NotificationView* stale,
 	NotificationView* fresh)
@@ -378,7 +399,7 @@ NotificationWindow::NotificationViewSwapped(NotificationView* stale,
 
 	if (it != fViews.end())
 		*it = fresh;
-}
+}*/
 
 
 void
@@ -483,7 +504,7 @@ NotificationWindow::_LoadAppFilters(BMessage& settings)
 	for (int32 i = 0; i < count; i++) {
 		AppUsage* app = new AppUsage();
 		settings.FindFlat("app_usage", i, app);
-		fAppFilters[app->Name()] = app;
+		fAppFilters[app->Signature()] = app;
 	}
 }
 
@@ -500,13 +521,15 @@ NotificationWindow::_LoadGeneralSettings(BMessage& settings)
 	}
 	if (settings.FindInt32(kTimeoutName, &fTimeout) != B_OK)
 		fTimeout = kDefaultTimeout;
+	fTimeout *= 1000000;
+		// Convert from seconds to microseconds
 
 	// Notify the view about the change
-	views_t::iterator it;
+/*	views_t::iterator it;
 	for (it = fViews.begin(); it != fViews.end(); ++it) {
 		NotificationView* view = (*it);
 		view->Invalidate();
-	}
+	}*/
 }
 
 
@@ -525,10 +548,15 @@ NotificationWindow::_LoadDisplaySettings(BMessage& settings)
 	else
 		fIconSize = (icon_size)setting;
 
-	// Notify the view about the change
-	views_t::iterator it;
-	for (it = fViews.begin(); it != fViews.end(); ++it) {
-		NotificationView* view = (*it);
+	// Notify the views about the change
+	appview_t::iterator aIt;
+	for (aIt = fAppViews.begin(); aIt != fAppViews.end(); ++aIt) {
+		AppGroupView* view = aIt->second;
 		view->Invalidate();
 	}
+/*	views_t::iterator vIt;
+	for (vIt = fViews.begin(); vIt != fViews.end(); ++vIt) {
+		NotificationView* view = (*vIt);
+		view->Invalidate();
+	}*/
 }

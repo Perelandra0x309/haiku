@@ -34,6 +34,8 @@ public:
 	static	BArchivable*		Instantiate(BMessage* archive);
 	virtual	status_t			Archive(BMessage* archive, bool deep = true) const;
 
+			const char*			SourceSignature() const;
+
 			notification_type	Type() const;
 
 			const char*			Group() const;
@@ -73,6 +75,8 @@ public:
 private:
 			status_t			fInitStatus;
 
+			BString				fSourceSignature;
+			BString				fSourceName;
 			notification_type	fType;
 			BString				fGroup;
 			BString				fTitle;

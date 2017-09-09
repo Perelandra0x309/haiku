@@ -17,14 +17,15 @@
 #include <String.h>
 
 class BMessage;
-class NotificationReceived;
+//class NotificationReceived;
 
-typedef std::map<BString, NotificationReceived*> notification_t;
+//typedef std::map<BString, NotificationReceived*> notification_t;
 
 class AppUsage : public BFlattenable {
 public:
 										AppUsage();
 										AppUsage(const char* name,
+											const char* signature,
 											bool allow = true);
 										~AppUsage();
 
@@ -36,17 +37,20 @@ public:
 	virtual	status_t					Unflatten(type_code code, const void* buffer,
 											ssize_t numBytes);
 
-			const char*					Name();
-			bool						Allowed(const char* title, notification_type type);
+			const char*					AppName();
+			const char*					Signature();
+//			bool						Allowed(const char* title, notification_type type);
 			bool						Allowed();
-			NotificationReceived*		NotificationAt(int32 index);
-			int32						Notifications();
-			void						AddNotification(NotificationReceived* notification);
+			void						SetAllowed(bool allow);
+//			NotificationReceived*		NotificationAt(int32 index);
+//			int32						Notifications();
+//			void						AddNotification(NotificationReceived* notification);
 
 private:
-			BString						fName;
+			BString						fAppName;
+			BString						fSignature;
 			bool						fAllow;
-			notification_t				fNotifications;
+//			notification_t				fNotifications;
 };
 
 #endif	// _APP_USAGE_H
