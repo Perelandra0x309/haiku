@@ -63,6 +63,10 @@ BNotification::BNotification(BMessage* archive)
 	fFile(NULL),
 	fBitmap(NULL)
 {
+	BString appName;
+	if (archive->FindString("_appname", &appName) == B_OK)
+		fSourceName = appName;
+
 	BString signature;
 	if (archive->FindString("_signature", &signature) == B_OK)
 		fSourceSignature = signature;
@@ -177,8 +181,11 @@ BNotification::Archive(BMessage* archive, bool deep) const
 {
 	status_t status = BArchivable::Archive(archive, deep);
 
-	if (status == B_OK && SourceSignature() != NULL)
-		status = archive->AddString("_signature", SourceSignature());
+	if (status == B_OK)
+		status = archive->AddString("_appname", fSourceName);
+
+	if (status == B_OK)
+		status = archive->AddString("_signature", fSourceSignature);
 
 	if (status == B_OK)
 		status = archive->AddInt32("_type", (int32)fType);
