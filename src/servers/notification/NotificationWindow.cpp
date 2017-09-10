@@ -1,5 +1,5 @@
 /*
- * Copyright 2010, Haiku, Inc. All Rights Reserved.
+ * Copyright 2010-2017, Haiku, Inc. All Rights Reserved.
  * Copyright 2008-2009, Pier Luigi Fiorini. All Rights Reserved.
  * Copyright 2004-2008, Michael Davidson. All Rights Reserved.
  * Copyright 2004-2007, Mikael Eiman. All Rights Reserved.
@@ -9,6 +9,7 @@
  *		Michael Davidson, slaad@bong.com.au
  *		Mikael Eiman, mikael@eiman.tv
  *		Pier Luigi Fiorini, pierluigi.fiorini@gmail.com
+ *		Brian Hill, supernova@tycho.email
  */
 #include "NotificationWindow.h"
 

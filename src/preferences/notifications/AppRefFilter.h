@@ -1,6 +1,6 @@
-/* AppRefFilter.h
- * Copyright 2010 Brian Hill
- * All rights reserved. Distributed under the terms of the BSD License.
+/*
+ * Copyright 2017, Haiku, Inc. All Rights Reserved.
+ * Distributed under the terms of the MIT License.
  */
 #ifndef EP_APPREFFILTER_H
 #define EP_APPREFFILTER_H
@@ -13,8 +13,10 @@ class AppRefFilter : public BRefFilter {
 public:
 					AppRefFilter();
 					//~AppRefFilter();
-	virtual bool	Filter(const entry_ref *ref, BNode *node, struct stat_beos *st,
-							const char *filetype);
+	virtual bool	Filter(const entry_ref *ref,
+						BNode *node,
+						struct stat_beos *st,
+						const char *filetype);
 };
 
 #endif

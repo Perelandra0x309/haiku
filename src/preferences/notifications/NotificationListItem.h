@@ -17,7 +17,8 @@ public:
 							NotificationListItem(BMessage& notificationData);
 							NotificationListItem(char* label);
 //							~NotificationListItem();
-	virtual void			DrawItem(BView *owner, BRect item_rect, bool complete = false);
+	virtual void			DrawItem(BView *owner, BRect item_rect,
+								bool complete = false);
 	virtual void			Update(BView *owner, const BFont *font);
 			status_t		InitStatus() { return fInitStatus; }
 			BMessage		GetMessage() { return fNotificationMessage; }

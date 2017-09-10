@@ -1,9 +1,6 @@
 /*
- * Copyright 2003-2009 Haiku Inc. All rights reserved.
+ * Copyright 2017 Haiku Inc. All rights reserved.
  * Distributed under the terms of the MIT License.
- *
- * Authors:
- *		Brian Hill (supernova@tycho.email)
  */
 #ifndef NOTIFICATIONS_CONSTANTS_H
 #define NOTIFICATIONS_CONSTANTS_H

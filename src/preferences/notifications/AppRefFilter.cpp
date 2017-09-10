@@ -1,6 +1,9 @@
-/* AppRefFilter.cpp
- * Copyright 2010 Brian Hill
- * All rights reserved. Distributed under the terms of the BSD License.
+/*
+ * Copyright 2017, Haiku, Inc. All Rights Reserved.
+ * Distributed under the terms of the MIT License.
+ *
+ * Authors:
+ *		Brian Hill, supernova@tycho.email
  */
 
 #include "AppRefFilter.h"
@@ -12,8 +15,8 @@ AppRefFilter::AppRefFilter()
 {
 }
 
-bool AppRefFilter::Filter(const entry_ref *ref, BNode *node, struct stat_beos *st,
-							const char *filetype)
+bool AppRefFilter::Filter(const entry_ref *ref, BNode *node,
+	struct stat_beos *st, const char *filetype)
 {
 	char* type = NULL;
 	const char *constFileType;
