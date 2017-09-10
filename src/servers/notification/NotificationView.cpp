@@ -35,7 +35,10 @@
 #include "NotificationWindow.h"
 
 
-static const int kIconStripeWidth = 32;
+const int kIconStripeWidth			= 32;
+const float kCloseSize				= 6;
+const float kEdgePadding			= 2;
+const float kSmallPadding			= 2;
 
 property_info message_prop_list[] = {
 	{ "type", {B_GET_PROPERTY, B_SET_PROPERTY, 0},
@@ -58,7 +61,6 @@ NotificationView::NotificationView(BNotification* notification, bigtime_t timeou
 	float iconSize, bool disableTimeout)
 	:
 	BView("NotificationView", B_WILL_DRAW),
-//	fParent(win),
 	fNotification(notification),
 	fTimeout(timeout),
 	fIconSize(iconSize),
@@ -70,9 +72,6 @@ NotificationView::NotificationView(BNotification* notification, bigtime_t timeou
 {
 	if (fNotification->Icon() != NULL)
 		fBitmap = new BBitmap(fNotification->Icon());
-
-//	if (fTimeout <= 0)
-//		fTimeout = fParent->Timeout() * 1000000;
 
 	BGroupLayout* layout = new BGroupLayout(B_VERTICAL);
 	SetLayout(layout);

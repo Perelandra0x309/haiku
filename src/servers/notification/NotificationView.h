@@ -18,9 +18,9 @@ class BBitmap;
 class BMessageRunner;
 class BNotification;
 
-class NotificationWindow;
-
 const uint32 kRemoveView = 'ReVi';
+const float kExpandSize				= 8;
+const float kPenSize				= 1;
 
 
 class NotificationView : public BView {
@@ -63,7 +63,6 @@ private:
 
 			typedef std::list<LineInfo*> LineInfoList;
 
-//			NotificationWindow*	fParent;
 			BNotification*		fNotification;
 			bigtime_t			fTimeout;
 			float				fIconSize;

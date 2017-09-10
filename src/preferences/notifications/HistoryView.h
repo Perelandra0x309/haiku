@@ -26,12 +26,12 @@ class BTextControl;
 //class BColumnListView;
 //class BStringColumn;
 //class BDateColumn;
-
+/*
 extern const float kEdgePadding;
 extern const float kSmallPadding;
 extern const float kCloseSize;
 extern const float kExpandSize;
-extern const float kPenSize;
+extern const float kPenSize;*/
 
 class HistoryView : public BView {
 public:

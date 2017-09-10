@@ -29,11 +29,11 @@ typedef std::map<BString, AppGroupView*> appview_t;
 typedef std::map<BString, AppUsage*> appfilter_t;
 typedef std::vector<NotificationView*> views_t;
 
-extern const float kEdgePadding;
-extern const float kSmallPadding;
-extern const float kCloseSize;
-extern const float kExpandSize;
-extern const float kPenSize;
+//extern const float kEdgePadding;
+//extern const float kSmallPadding;
+//extern const float kCloseSize;
+//extern const float kExpandSize;
+//extern const float kPenSize;
 
 const uint32 kRemoveGroupView = 'RGVi';
 

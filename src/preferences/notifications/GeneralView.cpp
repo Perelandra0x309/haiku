@@ -83,29 +83,29 @@ GeneralView::GeneralView(SettingsHost* host)
 		B_TRANSLATE_COMMENT(maxLabel.String(), "Slider high text"));
 
 	// Do not disturb
-	fDoNotDisturb = new BCheckBox("donotdisturb", B_TRANSLATE("Do not disturb:"),
+/*	fDoNotDisturb = new BCheckBox("donotdisturb", B_TRANSLATE("Do not disturb:"),
 		new BMessage(kSettingChanged));
-//	BStringView* fromTimeLabel = new BStringView("from_label",
-//		B_TRANSLATE("From"));
+	BStringView* fromTimeLabel = new BStringView("from_label",
+		B_TRANSLATE("From"));
 	fFromTimeEdit = new TTimeEdit("timeEdit", 5);
-//	BStringView* toTimeLabel = new BStringView("to_label",
-//		B_TRANSLATE("To"));
-	fToTimeEdit = new TTimeEdit("timeEdit", 5);
+	BStringView* toTimeLabel = new BStringView("to_label",
+		B_TRANSLATE("To"));
+	fToTimeEdit = new TTimeEdit("timeEdit", 5);*/
 
 	// Default position
 	// TODO: Here will come a screen representation with the four corners
 	// clickable
-	font_height fontHeight;
+/*	font_height fontHeight;
 	be_plain_font->GetHeight(&fontHeight);
 	float textHeight = ceilf(fontHeight.ascent + fontHeight.descent);
 	float monitorHeight = 10 + textHeight * 3;
 	float aspectRatio = 4.0f / 3.0f;
 	float monitorWidth = monitorHeight * aspectRatio;
 	BRect monitorRect = BRect(0, 0, monitorWidth, monitorHeight);
-//	BStringView* cornerLabel = new BStringView("corner_label",
-//		B_TRANSLATE("Location:"));
+	BStringView* cornerLabel = new BStringView("corner_label",
+		B_TRANSLATE("Location:"));
 	fCornerSelector = new ScreenCornerSelector(monitorRect, "FadeNow",
-		NULL, B_FOLLOW_NONE);
+		NULL, B_FOLLOW_NONE);*/
 	
 	BBox* box = new BBox("box");
 	box->SetLabel(fNotificationBox);
@@ -290,7 +290,6 @@ GeneralView::Save(BMessage& settings)
 	settings.AddBool(kAutoStartName, autoStart);
 
 	int32 timeout = fDurationSlider->Value();
-		// Convert from seconds to microseconds
 	settings.AddInt32(kTimeoutName, timeout);
 
 	// TODO Use a % of screen width value instead?
@@ -376,8 +375,8 @@ GeneralView::_EnableControls()
 	bool enabled = fNotificationBox->Value() == B_CONTROL_ON;
 	fWidthSlider->SetEnabled(enabled);
 	fDurationSlider->SetEnabled(enabled);
-	fDoNotDisturb->SetEnabled(enabled);
-	fFromTimeEdit->SetEnabled(enabled);
+//	fDoNotDisturb->SetEnabled(enabled);
+//	fFromTimeEdit->SetEnabled(enabled);
 }
 
 

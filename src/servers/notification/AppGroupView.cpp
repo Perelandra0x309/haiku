@@ -22,6 +22,9 @@
 #include "NotificationWindow.h"
 #include "NotificationView.h"
 
+const float kCloseSize				= 6;
+const float kEdgePadding			= 2;
+
 
 AppGroupView::AppGroupView(const BMessenger& messenger, const char* label)
 	:
