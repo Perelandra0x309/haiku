@@ -463,7 +463,7 @@ NotificationView::SetText(float newMaxWidth)
 	boldFont.GetHeight(&fh);
 	float fontHeight = ceilf(fh.leading) + ceilf(fh.descent)
 		+ ceilf(fh.ascent);
-	float y = 2 * fontHeight;
+	float y = fontHeight + kEdgePadding * 2;
 
 	// Title
 	LineInfo* titleLine = new LineInfo;

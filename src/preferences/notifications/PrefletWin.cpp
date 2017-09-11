@@ -30,14 +30,14 @@
 
 PrefletWin::PrefletWin()
 	:
-	BWindow(BRect(0, 0, 400, 400), B_TRANSLATE_SYSTEM_NAME("Notifications"),
+	BWindow(BRect(0, 0, 160 + 20 * be_plain_font->Size(), 300), B_TRANSLATE_SYSTEM_NAME("Notifications"),
 		B_TITLED_WINDOW, B_NOT_ZOOMABLE | B_ASYNCHRONOUS_CONTROLS
 		| B_AUTO_UPDATE_SIZE_LIMITS)
 {
 	// Preflet container view
 	fMainView = new PrefletView(this);
 	fMainView->SetBorder(B_NO_BORDER);
-	fMainView->SetExplicitMaxSize(BSize(B_SIZE_UNLIMITED, B_SIZE_UNSET));
+	fMainView->SetExplicitMaxSize(BSize(B_SIZE_UNLIMITED, B_SIZE_UNLIMITED));
 
 	// Defaults button
 	fDefaults = new BButton("defaults", B_TRANSLATE("Defaults"),
@@ -66,9 +66,7 @@ PrefletWin::PrefletWin()
 		.Add(fMainView)
 		.Add(fButtonsView)
 	.End();
-	BRect frame = Frame();
-//	SetSizeLimits(frame.Width(), B_SIZE_UNLIMITED, frame.Height(), B_SIZE_UNLIMITED);
-	fMainView->SetExplicitMinSize(BSize(frame.Width(), frame.Height()));
+	fMainView->SetExplicitMinSize(BSize(Frame().Width(), B_SIZE_UNSET));
 
 	ReloadSettings();
 

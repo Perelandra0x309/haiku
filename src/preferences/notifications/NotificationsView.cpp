@@ -81,7 +81,7 @@ NotificationsView::NotificationsView(SettingsHost* host)
 	SettingsPane("apps", host),
 	fSelectedRow(NULL)
 {
-	BRect rect(0, 0, 100, 100);
+//	BRect rect(0, 0, 100, 100);
 
 	// Search application field
 //	fSearch = new BTextControl(B_TRANSLATE("Search:"), NULL,
@@ -93,7 +93,10 @@ NotificationsView::NotificationsView(SettingsHost* host)
 	fApplications->SetSelectionMode(B_SINGLE_SELECTION_LIST);
 	fApplications->SetSelectionMessage(new BMessage(kApplicationSelected));
 
-	fAppCol = new BStringColumn(B_TRANSLATE("Application"), 200, 200, 400,
+	float colWidth = be_plain_font->StringWidth(B_TRANSLATE("Application"))
+		+ (kCLVTitlePadding * 2);
+	fAppCol = new BStringColumn(B_TRANSLATE("Application"), colWidth * 2,
+		colWidth, colWidth * 4,
 	//	be_plain_font->StringWidth(B_TRANSLATE("Application")) +
 	//	(kCLVTitlePadding * 2), rect.Width(),
 		B_TRUNCATE_END, B_ALIGN_LEFT);
@@ -105,9 +108,14 @@ NotificationsView::NotificationsView(SettingsHost* host)
 //		B_TRUNCATE_END, B_ALIGN_LEFT);
 //	fApplications->AddColumn(fSignatureCol, kSignatureIndex);
 
-	fAppEnabledCol = new BStringColumn(B_TRANSLATE("Status"), 10,
-		be_plain_font->StringWidth(B_TRANSLATE("Status")) +
-		(kCLVTitlePadding * 4), rect.Width(), B_TRUNCATE_END, B_ALIGN_LEFT);
+	colWidth = be_plain_font->StringWidth(B_TRANSLATE("Status"))
+		+ (kCLVTitlePadding * 2);
+	fAppEnabledCol = new BStringColumn(B_TRANSLATE("Status"), 
+		colWidth * 1.5, colWidth, colWidth * 3,
+	//10,
+	//	be_plain_font->StringWidth(B_TRANSLATE("Status")) +
+	//	(kCLVTitlePadding * 4), rect.Width(), 
+		B_TRUNCATE_END, B_ALIGN_LEFT);
 	fApplications->AddColumn(fAppEnabledCol, kAppEnabledIndex);
 	fApplications->SetSortColumn(fAppCol, true, true);
 	
