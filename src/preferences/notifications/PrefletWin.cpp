@@ -73,6 +73,8 @@ PrefletWin::PrefletWin()
 	// Center this window on screen and show it
 	CenterOnScreen();
 	Show();
+	
+	fMainView->StartWatchingRoster();
 }
 
 

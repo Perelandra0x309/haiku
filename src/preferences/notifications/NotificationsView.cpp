@@ -267,7 +267,7 @@ NotificationsView::MessageReceived(BMessage* msg)
 						"a valid signature", "Alert message"),
 					B_TRANSLATE("OK"), NULL, NULL, B_WIDTH_AS_USUAL,
 					B_WARNING_ALERT);
-				alert->Go();
+				alert->Go(NULL);
 			}
 			delete[] buf;
 			break;

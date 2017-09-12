@@ -6,7 +6,9 @@
 #ifndef _PREFLET_VIEW_H
 #define _PREFLET_VIEW_H
 
+#include <Messenger.h>
 #include <TabView.h>
+#include "GeneralView.h"
 
 class BIconRule;
 
@@ -18,11 +20,18 @@ const int32 kShowButtons = '_SHR';
 class PrefletView : public BTabView {
 public:
 						PrefletView(SettingsHost* host);
+						~PrefletView();
 
 			BView*		CurrentPage();
 			int32		CountPages() const;
 			BView*		PageAt(int32 index);
 	virtual	void		Select(int32 index);
+			void		StartWatchingRoster();
+
+private:
+			GeneralView*	fGeneralView;
+			BMessenger		fMessenger;
+			bool			fWatchingRoster;
 };
 
 #endif // PREFLETVIEW_H

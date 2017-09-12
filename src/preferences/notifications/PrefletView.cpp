@@ -17,8 +17,8 @@
 #include <Window.h>
 
 //#include "DisplayView.h"
-#include "GeneralView.h"
-#include "HistoryView.h"
+//#include "GeneralView.h"
+//#include "HistoryView.h"
 #include "NotificationsView.h"
 #include "PrefletView.h"
 #include "SettingsHost.h"
@@ -33,17 +33,18 @@
 
 PrefletView::PrefletView(SettingsHost* host)
 	:
-	BTabView("pages", B_WIDTH_FROM_WIDEST)
+	BTabView("pages", B_WIDTH_FROM_WIDEST),
+	fWatchingRoster(false)
 {
 	// Pages
-	GeneralView* general = new GeneralView(host);
+	fGeneralView = new GeneralView(host);
 //	DisplayView* display = new DisplayView(host);
 	NotificationsView* apps = new NotificationsView(host);
 //	HistoryView* history = new HistoryView();
 
 	// Page selector
 	BTab* tab = new BTab();
-	AddTab(general, tab);
+	AddTab(fGeneralView, tab);
 	tab->SetLabel(B_TRANSLATE("Settings"));
 
 /*	tab = new BTab();
@@ -57,6 +58,16 @@ PrefletView::PrefletView(SettingsHost* host)
 /*	tab = new BTab();
 	AddTab(history, tab);
 	tab->SetLabel(B_TRANSLATE("History"));*/
+}
+
+
+PrefletView::~PrefletView()
+{
+	//Need to stop watching the roster
+	if (fWatchingRoster) {
+		be_roster->StopWatching(fMessenger);
+		fWatchingRoster = false;
+	}
 }
 
 
@@ -81,7 +92,6 @@ PrefletView::PageAt(int32 index)
 }
 
 
-
 void
 PrefletView::Select(int32 index)
 {
@@ -96,4 +106,15 @@ PrefletView::Select(int32 index)
 	BMessage showMessage(kShowButtons);
 	showMessage.AddBool(kShowButtonsKey, showButtons);
 	Window()->PostMessage(&showMessage);
+}
+
+
+void
+PrefletView::StartWatchingRoster()
+{
+	//Start watching the application roster for launches/quits
+	fMessenger.SetTo(fGeneralView);
+	status_t result = be_roster->StartWatching(fMessenger);
+	if (result == B_OK)
+		fWatchingRoster = true;
 }

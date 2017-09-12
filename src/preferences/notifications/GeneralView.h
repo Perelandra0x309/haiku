@@ -51,6 +51,7 @@ private:
 		int32				fOriginalTimeout;
 		float				fOriginalWidth;
 		icon_size			fOriginalIconSize;
+		bool				fServerChangeTriggered;
 
 		void				_EnableControls();
 		void				_SendSampleNotification();

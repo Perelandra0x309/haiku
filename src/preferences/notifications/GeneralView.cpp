@@ -35,6 +35,7 @@
 #include <notification/Notifications.h>
 
 #include "GeneralView.h"
+#include "NotificationsConstants.h"
 #include "SettingsHost.h"
 
 #undef B_TRANSLATION_CONTEXT
@@ -42,12 +43,14 @@
 const int32 kToggleNotifications = '_TSR';
 const int32 kWidthChanged = '_WIC';
 const int32 kTimeoutChanged = '_TIC';
+const int32 kServerChangeTriggered = '_SCT';
 const BString kSampleMessageID("NotificationsSample");
 
 
 GeneralView::GeneralView(SettingsHost* host)
 	:
-	SettingsPane("general", host)
+	SettingsPane("general", host),
+	fServerChangeTriggered(false)
 {
 	// Notifications
 	fNotificationBox = new BCheckBox("server",
@@ -156,6 +159,36 @@ void
 GeneralView::MessageReceived(BMessage* msg)
 {
 	switch (msg->what) {
+		case B_SOME_APP_QUIT:
+		case B_SOME_APP_LAUNCHED:
+		{
+			//Find the signature and check if it was the notification server
+			char* sig;
+			if (msg->FindString("be:signature", (const char**)&sig) == B_OK)
+			{
+				BString signature(sig);
+				if (signature.Compare(kNotificationServerSignature) == 0)
+				{
+					// If this preflet triggered the change then ignore
+					if (fServerChangeTriggered) {
+						fServerChangeTriggered = false;
+						break;
+					}
+					BString text;
+					if (msg->what == B_SOME_APP_QUIT)
+						text.SetTo(B_TRANSLATE("The notification server has quit."));
+					else
+						text.SetTo(B_TRANSLATE("The notification server started."));
+					BAlert* alert = new BAlert("", text.String(),
+						B_TRANSLATE("OK"));
+					alert->Go(NULL);
+					fNotificationBox->SetValue(_IsServerRunning() ?
+						B_CONTROL_ON : B_CONTROL_OFF);
+					_EnableControls();
+				}
+			}
+			break;
+		}
 		case kToggleNotifications:
 		{
 			entry_ref ref;
@@ -201,6 +234,7 @@ GeneralView::MessageReceived(BMessage* msg)
 					(void)alert->Go();
 					return;
 				}
+				fServerChangeTriggered = true;
 			} else if (fNotificationBox->Value() == B_CONTROL_ON && !_IsServerRunning()) {
 				// Start server
 				status_t err = be_roster->Launch(kNotificationServerSignature);
@@ -216,6 +250,7 @@ GeneralView::MessageReceived(BMessage* msg)
 					(void)alert->Go();
 					return;
 				}
+				fServerChangeTriggered = true;
 			}
 			_EnableControls();
 			break;
