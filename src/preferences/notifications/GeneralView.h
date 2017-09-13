@@ -17,9 +17,8 @@
 #include <StringView.h>
 #include <TextControl.h>
 
-//#include "DateTimeEdit.h"
-//#include "ScreenCornerSelector.h"
 #include "SettingsPane.h"
+
 
 class GeneralView : public SettingsPane {
 public:
@@ -41,12 +40,6 @@ private:
 		BCheckBox*			fNotificationBox;
 		BSlider*			fDurationSlider;
 		BSlider*			fWidthSlider;
-//		BCheckBox*			fDoNotDisturb;
-//		BTextControl*		fDNDFrom;
-//		BTextControl*		fDNDTo;
-//		TTimeEdit*			fFromTimeEdit;
-//		TTimeEdit*			fToTimeEdit;
-//		ScreenCornerSelector* fCornerSelector;
 		
 		int32				fOriginalTimeout;
 		float				fOriginalWidth;

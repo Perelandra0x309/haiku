@@ -7,16 +7,15 @@
 
 #include <FilePanel.h>
 #include <NodeInfo.h>
-#include <string.h>
+
 
 class AppRefFilter : public BRefFilter {
 public:
-					AppRefFilter();
-					//~AppRefFilter();
-	virtual bool	Filter(const entry_ref *ref,
-						BNode *node,
-						struct stat_beos *st,
-						const char *filetype);
+						AppRefFilter();
+	virtual bool		Filter(const entry_ref *ref,
+							BNode *node,
+							struct stat_beos *st,
+							const char *filetype);
 };
 
 #endif

@@ -30,7 +30,8 @@
 
 PrefletWin::PrefletWin()
 	:
-	BWindow(BRect(0, 0, 160 + 20 * be_plain_font->Size(), 300), B_TRANSLATE_SYSTEM_NAME("Notifications"),
+	BWindow(BRect(0, 0, 160 + 20 * be_plain_font->Size(), 300),
+		B_TRANSLATE_SYSTEM_NAME("Notifications"),
 		B_TITLED_WINDOW, B_NOT_ZOOMABLE | B_ASYNCHRONOUS_CONTROLS
 		| B_AUTO_UPDATE_SIZE_LIMITS)
 {
@@ -56,8 +57,8 @@ PrefletWin::PrefletWin()
 			.Add(fDefaults)
 			.Add(fRevert)
 			.AddGlue()
-			.SetInsets(B_USE_WINDOW_SPACING, 0,
-				B_USE_WINDOW_SPACING, B_USE_WINDOW_SPACING)
+			.SetInsets(B_USE_WINDOW_SPACING, 0, B_USE_WINDOW_SPACING,
+				B_USE_WINDOW_SPACING)
 		.End();
 	fButtonsLayout = fButtonsView->GroupLayout();
 	
@@ -94,15 +95,15 @@ PrefletWin::MessageReceived(BMessage* msg)
 			path.Append(kSettingsFile);
 
 			BMessage settingsStore;
-			for (int32 i = 0; i < fMainView->CountPages(); i++) {
+			int32 count = fMainView->CountTabs();
+			for (int32 i = 0; i < count; i++) {
 				SettingsPane* pane =
 					dynamic_cast<SettingsPane*>(fMainView->PageAt(i));
 				if (pane) {
 					if (pane->Save(settingsStore) == B_OK) {
 						fDefaults->SetEnabled(_DefaultsPossible());
 						fRevert->SetEnabled(_RevertPossible());
-					}
-					else
+					} else
 						break;
 				}
 			}
@@ -173,7 +174,8 @@ PrefletWin::ReloadSettings()
 	BFile file(path.Path(), B_READ_ONLY);
 	settings.Unflatten(&file);
 
-	for (int32 i = 0; i < fMainView->CountPages(); i++) {
+	int32 count = fMainView->CountTabs();
+	for (int32 i = 0; i < count; i++) {
 		SettingsPane* pane =
 			dynamic_cast<SettingsPane*>(fMainView->PageAt(i));
 		if (pane)
@@ -186,7 +188,8 @@ PrefletWin::ReloadSettings()
 status_t
 PrefletWin::_Revert()
 {
-	for (int32 i = 0; i < fMainView->CountPages(); i++) {
+	int32 count = fMainView->CountTabs();
+	for (int32 i = 0; i < count; i++) {
 		SettingsPane* pane =
 			dynamic_cast<SettingsPane*>(fMainView->PageAt(i));
 		if (pane)
@@ -199,7 +202,8 @@ PrefletWin::_Revert()
 bool
 PrefletWin::_RevertPossible()
 {
-	for (int32 i = 0; i < fMainView->CountPages(); i++) {
+	int32 count = fMainView->CountTabs();
+	for (int32 i = 0; i < count; i++) {
 		SettingsPane* pane =
 			dynamic_cast<SettingsPane*>(fMainView->PageAt(i));
 		if (pane && pane->RevertPossible())
@@ -212,7 +216,8 @@ PrefletWin::_RevertPossible()
 status_t
 PrefletWin::_Defaults()
 {
-	for (int32 i = 0; i < fMainView->CountPages(); i++) {
+	int32 count = fMainView->CountTabs();
+	for (int32 i = 0; i < count; i++) {
 		SettingsPane* pane =
 			dynamic_cast<SettingsPane*>(fMainView->PageAt(i));
 		if (pane)
@@ -225,7 +230,8 @@ PrefletWin::_Defaults()
 bool
 PrefletWin::_DefaultsPossible()
 {
-	for (int32 i = 0; i < fMainView->CountPages(); i++) {
+	int32 count = fMainView->CountTabs();
+	for (int32 i = 0; i < count; i++) {
 		SettingsPane* pane =
 			dynamic_cast<SettingsPane*>(fMainView->PageAt(i));
 		if (pane && pane->DefaultsPossible())

@@ -40,6 +40,7 @@
 
 #undef B_TRANSLATION_CONTEXT
 #define B_TRANSLATION_CONTEXT "GeneralView"
+
 const int32 kToggleNotifications = '_TSR';
 const int32 kWidthChanged = '_WIC';
 const int32 kTimeoutChanged = '_TIC';
@@ -52,10 +53,12 @@ GeneralView::GeneralView(SettingsHost* host)
 	SettingsPane("general", host),
 	fServerChangeTriggered(false)
 {
-	// Notifications
+	// Notification server
 	fNotificationBox = new BCheckBox("server",
 		B_TRANSLATE("Enable notifications"),
 		new BMessage(kToggleNotifications));
+	BBox* box = new BBox("box");
+	box->SetLabel(fNotificationBox);
 
 	// Window width
 	int32 minWidth = int32(kMinimumWidth / kWidthStep);
@@ -86,55 +89,10 @@ GeneralView::GeneralView(SettingsHost* host)
 		B_TRANSLATE_COMMENT(minLabel.String(), "Slider low text"),
 		B_TRANSLATE_COMMENT(maxLabel.String(), "Slider high text"));
 
-	// Do not disturb
-/*	fDoNotDisturb = new BCheckBox("donotdisturb", B_TRANSLATE("Do not disturb:"),
-		new BMessage(kSettingChanged));
-	BStringView* fromTimeLabel = new BStringView("from_label",
-		B_TRANSLATE("From"));
-	fFromTimeEdit = new TTimeEdit("timeEdit", 5);
-	BStringView* toTimeLabel = new BStringView("to_label",
-		B_TRANSLATE("To"));
-	fToTimeEdit = new TTimeEdit("timeEdit", 5);*/
-
-	// Default position
-	// TODO: Here will come a screen representation with the four corners
-	// clickable
-/*	font_height fontHeight;
-	be_plain_font->GetHeight(&fontHeight);
-	float textHeight = ceilf(fontHeight.ascent + fontHeight.descent);
-	float monitorHeight = 10 + textHeight * 3;
-	float aspectRatio = 4.0f / 3.0f;
-	float monitorWidth = monitorHeight * aspectRatio;
-	BRect monitorRect = BRect(0, 0, monitorWidth, monitorHeight);
-	BStringView* cornerLabel = new BStringView("corner_label",
-		B_TRANSLATE("Location:"));
-	fCornerSelector = new ScreenCornerSelector(monitorRect, "FadeNow",
-		NULL, B_FOLLOW_NONE);*/
-	
-	BBox* box = new BBox("box");
-	box->SetLabel(fNotificationBox);
-
 	box->AddChild(BLayoutBuilder::Group<>(B_VERTICAL)
 		.SetInsets(B_USE_DEFAULT_SPACING)
 		.Add(fWidthSlider)
 		.Add(fDurationSlider)
-	/*	.Add(fDoNotDisturb)
-		.AddGroup(B_HORIZONTAL)
-			.SetInsets(B_USE_DEFAULT_SPACING, 0, 0, 0)
-			.AddGrid()
-				.Add(fromTimeLabel, 0, 0)
-				.Add(fFromTimeEdit, 1, 0)
-				.Add(toTimeLabel, 2, 0)
-				.Add(fToTimeEdit, 3, 0)
-			.End()
-			.AddGlue(10)
-		.End()
-		.AddGrid(B_USE_DEFAULT_SPACING, B_USE_WINDOW_SPACING)
-			.AddGlue(0, 0, 2)
-			.Add(cornerLabel, 0, 1)
-			.Add(fCornerSelector, 1, 1)
-			.AddGlue(0, 2, 2)
-		.End()*/
 		.AddGlue()
 		.View());
 	
@@ -169,7 +127,7 @@ GeneralView::MessageReceived(BMessage* msg)
 				BString signature(sig);
 				if (signature.Compare(kNotificationServerSignature) == 0)
 				{
-					// If this preflet triggered the change then ignore
+					// If this preflet triggered the change then ignore message
 					if (fServerChangeTriggered) {
 						fServerChangeTriggered = false;
 						break;
@@ -209,7 +167,7 @@ GeneralView::MessageReceived(BMessage* msg)
 				// Server team
 				team_id team = be_roster->TeamFor(kNotificationServerSignature);
 
-				// Establish a connection to infopopper_server
+				// Establish a connection to server
 				status_t ret = B_ERROR;
 				BMessenger messenger(kNotificationServerSignature, team, &ret);
 				if (ret != B_OK) {
@@ -296,22 +254,12 @@ GeneralView::Load(BMessage& settings)
 		|| fOriginalTimeout > kMaximumTimeout
 		|| fOriginalTimeout < kMinimumTimeout)
 		fOriginalTimeout = kDefaultTimeout;
-// TODO need to save again if values outside allowed
+// TODO need to save again if values outside of expected range
 	int32 setting;
 	if (settings.FindInt32(kIconSizeName, &setting) != B_OK)
 		fOriginalIconSize = kDefaultIconSize;
 	else
 		fOriginalIconSize = (icon_size)setting;
-
-	/*int32 hour;
-	int32 minute;
-	int32 second;
-	if (message->FindInt32("hour", &hour) == B_OK
-		&& message->FindInt32("minute", &minute) == B_OK
-		&& message->FindInt32("second", &second) == B_OK) {
-		fClock->SetTime(hour, minute, second);
-		fTimeEdit->SetTime(hour, minute, second);
-	}*/
 
 	_EnableControls();
 	
@@ -328,10 +276,6 @@ GeneralView::Save(BMessage& settings)
 	int32 timeout = fDurationSlider->Value();
 	settings.AddInt32(kTimeoutName, timeout);
 
-	// TODO Use a % of screen width value instead?
-//	BScreen screen;
-//	float percent = fWidthSlider->Value() / 100.0;
-//	float width = percent * screen.Frame().Width();
 	float width = fWidthSlider->Value() * 50;
 	settings.AddFloat(kWidthName, width);
 
@@ -411,8 +355,6 @@ GeneralView::_EnableControls()
 	bool enabled = fNotificationBox->Value() == B_CONTROL_ON;
 	fWidthSlider->SetEnabled(enabled);
 	fDurationSlider->SetEnabled(enabled);
-//	fDoNotDisturb->SetEnabled(enabled);
-//	fFromTimeEdit->SetEnabled(enabled);
 }
 
 

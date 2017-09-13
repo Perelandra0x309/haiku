@@ -16,9 +16,6 @@
 #include <Message.h>
 #include <Window.h>
 
-//#include "DisplayView.h"
-//#include "GeneralView.h"
-//#include "HistoryView.h"
 #include "NotificationsView.h"
 #include "PrefletView.h"
 #include "SettingsHost.h"
@@ -28,9 +25,6 @@
 #define B_TRANSLATION_CONTEXT "PrefletView"
 
 
-//const int32 kPageSelected = '_LCH';
-
-
 PrefletView::PrefletView(SettingsHost* host)
 	:
 	BTabView("pages", B_WIDTH_FROM_WIDEST),
@@ -38,26 +32,16 @@ PrefletView::PrefletView(SettingsHost* host)
 {
 	// Pages
 	fGeneralView = new GeneralView(host);
-//	DisplayView* display = new DisplayView(host);
 	NotificationsView* apps = new NotificationsView(host);
-//	HistoryView* history = new HistoryView();
 
 	// Page selector
 	BTab* tab = new BTab();
 	AddTab(fGeneralView, tab);
 	tab->SetLabel(B_TRANSLATE("Settings"));
 
-/*	tab = new BTab();
-	AddTab(display, tab);
-	tab->SetLabel(B_TRANSLATE("Display"));*/
-
 	tab = new BTab();
 	AddTab(apps, tab);
 	tab->SetLabel(B_TRANSLATE("Applications"));
-	
-/*	tab = new BTab();
-	AddTab(history, tab);
-	tab->SetLabel(B_TRANSLATE("History"));*/
 }
 
 
@@ -78,13 +62,6 @@ PrefletView::CurrentPage()
 }
 
 
-int32
-PrefletView::CountPages() const
-{
-	return 2;
-}
-
-
 BView*
 PrefletView::PageAt(int32 index)
 {
@@ -100,8 +77,7 @@ PrefletView::Select(int32 index)
 
 	BTabView::Select(index);
 
-	SettingsPane* pane =
-					dynamic_cast<SettingsPane*>(PageAt(index));
+	SettingsPane* pane = dynamic_cast<SettingsPane*>(PageAt(index));
 	bool showButtons = (pane != NULL) && pane->UseDefaultRevertButtons();
 	BMessage showMessage(kShowButtons);
 	showMessage.AddBool(kShowButtonsKey, showButtons);

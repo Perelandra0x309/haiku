@@ -62,25 +62,17 @@ private:
 			void				_UpdateSelectedItem();
 			void				_RecallItemSettings();
 			void				_PopulateApplications();
-//			void				_Populate(AppUsage* usage);
 
 			appusage_t			fAppFilters;
 			AppRefFilter*		fPanelFilter;
 			BFilePanel*			fAddAppPanel;
 			BButton*			fAddButton;
 			BButton*			fRemoveButton;
-			BCheckBox*			fBlockAll;
-//			BTextControl*		fSearch;
+			BCheckBox*			fMuteAll;
 			BColumnListView*	fApplications;
 			AppRow*				fSelectedRow;
 			BStringColumn*		fAppCol;
-//			BStringColumn*		fSignatureCol;
 			BStringColumn*		fAppEnabledCol;
-/*			BColumnListView*	fNotifications;
-			BStringColumn*		fTitleCol;
-			BDateColumn*		fDateCol;
-			BStringColumn*		fTypeCol;
-			BStringColumn*		fAllowCol;*/
 };
 
 #endif // _APPS_VIEW_H

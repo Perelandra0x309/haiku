@@ -8,13 +8,12 @@
 
 #include <Messenger.h>
 #include <TabView.h>
-#include "GeneralView.h"
 
-class BIconRule;
+#include "GeneralView.h"
 
 class SettingsHost;
 
-const int32 kShowButtons = '_SHR';
+const int32 kShowButtons = '_SHB';
 #define kShowButtonsKey "showButtons"
 
 class PrefletView : public BTabView {
@@ -23,7 +22,6 @@ public:
 						~PrefletView();
 
 			BView*		CurrentPage();
-			int32		CountPages() const;
 			BView*		PageAt(int32 index);
 	virtual	void		Select(int32 index);
 			void		StartWatchingRoster();

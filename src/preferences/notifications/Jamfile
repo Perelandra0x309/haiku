@@ -2,7 +2,7 @@ SubDir HAIKU_TOP src preferences notifications ;
 
 UseHeaders [ FDirName $(HAIKU_TOP) src servers notification ] : true ;
 
-UsePrivateHeaders shared interface notification ;
+UsePrivateHeaders interface notification ;
 
 Application Notifications :
 	AppRefFilter.cpp
