@@ -242,26 +242,36 @@ NotificationsView::MessageReceived(BMessage* msg)
 			BNode node(&srcEntry);
 			char *buf = new char[B_ATTR_NAME_LENGTH];
 			ssize_t size;
-			if( (size = node.ReadAttr("BEOS:APP_SIG",0,0,buf,B_ATTR_NAME_LENGTH)) > 0 )
+			if( (size = node.ReadAttr("BEOS:APP_SIG", 0, 0, buf,
+				B_ATTR_NAME_LENGTH)) > 0 )
 			{
-				AppUsage* appUsage = new AppUsage(path.Leaf(), buf, true);
-				fAppFilters[appUsage->Signature()] = appUsage;
-		//		Window()->Lock();
-				AppRow* row = new AppRow(appUsage->AppName(),
-					appUsage->Signature(), appUsage->Allowed());
-				fApplications->AddRow(row);
-				fApplications->DeselectAll();
-				fApplications->AddToSelection(row);
-				fApplications->ScrollTo(row);
-				_UpdateSelectedItem();
-				_RecallItemSettings();
-				//row->Invalidate();
-				//fApplications->InvalidateRow(row);
-				// TODO redraw row
-			//	Window()->Unlock();
-				Window()->PostMessage(kApply);
-			}
-			else {
+				// Search for already existing app
+				appusage_t::iterator it = fAppFilters.find(buf);
+				if (it != fAppFilters.end()) {
+					BString text(path.Leaf());
+					text.Append(B_TRANSLATE_COMMENT(" is already listed",
+							"Alert message"));
+					BAlert* alert = new BAlert("", text.String(),
+						B_TRANSLATE("OK"), NULL, NULL, B_WIDTH_AS_USUAL,
+						B_WARNING_ALERT);
+					alert->Go(NULL);
+				} else {
+					AppUsage* appUsage = new AppUsage(path.Leaf(), buf, true);
+					fAppFilters[appUsage->Signature()] = appUsage;
+					AppRow* row = new AppRow(appUsage->AppName(),
+						appUsage->Signature(), appUsage->Allowed());
+					fApplications->AddRow(row);
+					fApplications->DeselectAll();
+					fApplications->AddToSelection(row);
+					fApplications->ScrollTo(row);
+					_UpdateSelectedItem();
+					_RecallItemSettings();
+					//row->Invalidate();
+					//fApplications->InvalidateRow(row);
+					// TODO redraw row properly
+					Window()->PostMessage(kApply);
+				}
+			} else {
 				BAlert* alert = new BAlert("",
 					B_TRANSLATE_COMMENT("Application does not have "
 						"a valid signature", "Alert message"),
