@@ -128,31 +128,6 @@ NotificationWindow::MessageReceived(BMessage* message)
 			_LoadSettings();
 			break;
 		}
-/*		case B_COUNT_PROPERTIES:
-		{
-			BMessage reply(B_REPLY);
-			BMessage specifier;
-			const char* property = NULL;
-			bool messageOkay = true;
-
-			if (message->FindMessage("specifiers", 0, &specifier) != B_OK)
-				messageOkay = false;
-			if (specifier.FindString("property", &property) != B_OK)
-				messageOkay = false;
-			if (strcmp(property, "message") != 0)
-				messageOkay = false;
-
-			if (messageOkay)
-				reply.AddInt32("result", fViews.size());
-			else {
-				reply.what = B_MESSAGE_NOT_UNDERSTOOD;
-				reply.AddInt32("error", B_ERROR);
-			}
-
-			message->SendReply(&reply);
-			break;
-		}
-		case B_CREATE_PROPERTY:*/
 		case kNotificationMessage:
 		{
 			BMessage reply(B_REPLY);
@@ -409,11 +384,12 @@ void
 NotificationWindow::_LoadDisplaySettings(BMessage& settings)
 {
 	int32 setting;
+	float originalWidth = fWidth;
 
 	if (settings.FindFloat(kWidthName, &fWidth) != B_OK)
 		fWidth = kDefaultWidth;
-	GetLayout()->SetExplicitMaxSize(BSize(fWidth, B_SIZE_UNSET));
-	GetLayout()->SetExplicitMinSize(BSize(fWidth, B_SIZE_UNSET));
+	if (originalWidth != fWidth)
+		GetLayout()->SetExplicitSize(BSize(fWidth, B_SIZE_UNSET));
 
 	if (settings.FindInt32(kIconSizeName, &setting) != B_OK)
 		fIconSize = kDefaultIconSize;

@@ -23,7 +23,6 @@
 #include <Font.h>
 #include <LayoutBuilder.h>
 #include <Node.h>
-#include <Notification.h>
 #include <Path.h>
 #include <Query.h>
 #include <Roster.h>
@@ -41,10 +40,10 @@
 #undef B_TRANSLATION_CONTEXT
 #define B_TRANSLATION_CONTEXT "GeneralView"
 
-const int32 kToggleNotifications = '_TSR';
-const int32 kWidthChanged = '_WIC';
-const int32 kTimeoutChanged = '_TIC';
-const int32 kServerChangeTriggered = '_SCT';
+const uint32 kToggleNotifications = '_TSR';
+const uint32 kWidthChanged = '_WIC';
+const uint32 kTimeoutChanged = '_TIC';
+const uint32 kServerChangeTriggered = '_SCT';
 const BString kSampleMessageID("NotificationsSample");
 
 
@@ -216,23 +215,16 @@ GeneralView::MessageReceived(BMessage* msg)
 		case kWidthChanged: {
 			int32 value = fWidthSlider->Value() * 50;
 			_SetWidthLabel(value);
-			SettingsPane::MessageReceived(new BMessage(kSettingChanged));
-			_EnableControls();
-			_SendSampleNotification();
+			SettingsPane::SettingsChanged(true);
 			break;
 		}
 		case kTimeoutChanged:
 		{
 			int32 value = fDurationSlider->Value();
 			_SetTimeoutLabel(value);
-			SettingsPane::MessageReceived(new BMessage(kSettingChanged));
-			_EnableControls();
-			_SendSampleNotification();
+			SettingsPane::SettingsChanged(true);
 			break;
 		}
-		case kSettingChanged:
-			SettingsPane::MessageReceived(msg);
-			break;
 		default:
 			BView::MessageReceived(msg);
 			break;
@@ -355,18 +347,6 @@ GeneralView::_EnableControls()
 	bool enabled = fNotificationBox->Value() == B_CONTROL_ON;
 	fWidthSlider->SetEnabled(enabled);
 	fDurationSlider->SetEnabled(enabled);
-}
-
-
-void
-GeneralView::_SendSampleNotification()
-{
-	BNotification notification(B_INFORMATION_NOTIFICATION);
-	notification.SetMessageID(kSampleMessageID);
-	notification.SetGroup(B_TRANSLATE("Notifications"));
-	notification.SetTitle(B_TRANSLATE("Notifications preflet sample"));
-	notification.SetContent(B_TRANSLATE("This is a test notification message"));
-	notification.Send(fDurationSlider->Value() * 1000000);
 }
 
 

@@ -12,13 +12,12 @@ class BNode;
 
 class SettingsHost;
 
-const int32 kSettingChanged = '_STC';
 
 class SettingsPane : public BView {
 public:
 							SettingsPane(const char* name, SettingsHost* host);
 
-	virtual	void			MessageReceived(BMessage* msg);
+	void					SettingsChanged(bool showExample);
 
 	virtual status_t		Load(BMessage&) = 0;
 	virtual	status_t		Save(BMessage&) = 0;

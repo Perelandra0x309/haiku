@@ -5,6 +5,7 @@
  *
  * Authors:
  *		Pier Luigi Fiorini, pierluigi.fiorini@gmail.com
+ *		Brian Hill, supernova@tycho.email
  */
 
 #include <Message.h>
@@ -22,13 +23,7 @@ SettingsPane::SettingsPane(const char* name, SettingsHost* host)
 
 
 void
-SettingsPane::MessageReceived(BMessage* msg)
+SettingsPane::SettingsChanged(bool showExample)
 {
-	switch (msg->what) {
-		case kSettingChanged:
-			fHost->SettingChanged();
-			break;
-		default:
-			BView::MessageReceived(msg);
-	}
+	fHost->SettingChanged(showExample);
 }

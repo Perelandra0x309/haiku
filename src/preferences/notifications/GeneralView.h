@@ -47,7 +47,6 @@ private:
 		bool				fServerChangeTriggered;
 
 		void				_EnableControls();
-		void				_SendSampleNotification();
 		void				_SetWidthLabel(int32 value);
 		void				_SetTimeoutLabel(int32 value);
 		bool				_CanFindServer(entry_ref* ref);

@@ -15,6 +15,7 @@
 #include <Button.h>
 #include <Catalog.h>
 #include <FindDirectory.h>
+#include <Notification.h>
 #include <Path.h>
 #include <SeparatorView.h>
 
@@ -26,6 +27,8 @@
 
 #undef B_TRANSLATION_CONTEXT
 #define B_TRANSLATION_CONTEXT "PrefletWin"
+
+const BString kSampleMessageID("NotificationsSample");
 
 
 PrefletWin::PrefletWin()
@@ -84,6 +87,7 @@ PrefletWin::MessageReceived(BMessage* msg)
 {
 	switch (msg->what) {
 		case kApply:
+		case kApplyWithExample:
 		{
 			BPath path;
 
@@ -120,6 +124,10 @@ PrefletWin::MessageReceived(BMessage* msg)
 				alert->SetFlags(alert->Flags() | B_CLOSE_ON_ESCAPE);
 				(void)alert->Go();
 			}
+			file.Unset();
+
+			if (msg->what == kApplyWithExample)
+				_SendExampleNotification();
 
 			break;
 		}
@@ -153,9 +161,12 @@ PrefletWin::QuitRequested()
 
 
 void
-PrefletWin::SettingChanged()
+PrefletWin::SettingChanged(bool showExample)
 {
-	PostMessage(kApply);
+	if (showExample)
+		PostMessage(kApplyWithExample);
+	else
+		PostMessage(kApply);
 }
 
 
@@ -238,4 +249,16 @@ PrefletWin::_DefaultsPossible()
 			return true;
 	}
 	return false;
+}
+
+
+void
+PrefletWin::_SendExampleNotification()
+{
+	BNotification notification(B_INFORMATION_NOTIFICATION);
+	notification.SetMessageID(kSampleMessageID);
+	notification.SetGroup(B_TRANSLATE("Notifications"));
+	notification.SetTitle(B_TRANSLATE("Notifications preflet sample"));
+	notification.SetContent(B_TRANSLATE("This is a test notification message"));
+	notification.Send();
 }

@@ -14,7 +14,7 @@ class SettingsHost {
 public:
 					SettingsHost() {}
 
-	virtual	void	SettingChanged() = 0;
+	virtual	void	SettingChanged(bool showExample = false) = 0;
 };
 
 #endif // _SETTINGS_HOST_H

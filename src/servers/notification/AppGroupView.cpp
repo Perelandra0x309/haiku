@@ -59,7 +59,6 @@ AppGroupView::Draw(BRect updateRect)
 	StrokeLine(bounds.LeftTop(), bounds.LeftBottom());
 	uint32 borders = BControlLook::B_TOP_BORDER
 		| BControlLook::B_BOTTOM_BORDER | BControlLook::B_RIGHT_BORDER;
-
 	be_control_look->DrawButtonBackground(this, bounds, bounds, menuColor,
 		0, borders);
 

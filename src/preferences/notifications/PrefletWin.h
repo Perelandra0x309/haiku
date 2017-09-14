@@ -25,7 +25,7 @@ public:
 	virtual	bool			QuitRequested();
 	virtual	void			MessageReceived(BMessage* msg);
 
-	virtual	void			SettingChanged();
+	virtual	void			SettingChanged(bool showExample);
 			void			ReloadSettings();
 
 private:
@@ -33,6 +33,7 @@ private:
 			bool			_RevertPossible();
 			status_t		_Defaults();
 			bool			_DefaultsPossible();
+			void			_SendExampleNotification();
 			
 			PrefletView*	fMainView;
 			BGroupView*		fButtonsView;
