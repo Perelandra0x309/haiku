@@ -13,14 +13,6 @@
 // Messages
 const uint32 kNotificationMessage = 'nssm';
 
-// Archived notifications
-const uint32 kNotificationsArchive = 'nota';
-const uint32 kNotificationData = 'notd';
-const BString kNameNotificationData = "notification_data";
-const BString kNameNotificationMessage = "notification_message";
-const BString kNameWasAllowed = "was_allowed";
-const BString kNameTimestamp = "timestamp";
-
 // Settings constants
 extern const char* kSettingsFile;
 
@@ -29,7 +21,6 @@ extern const char* kAutoStartName;
 extern const char* kTimeoutName;
 extern const char* kWidthName;
 extern const char* kIconSizeName;
-extern const char* kLayoutName;
 
 // General default settings
 const bool kDefaultAutoStart = true;

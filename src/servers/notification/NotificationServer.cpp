@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2015, Haiku, Inc. All Rights Reserved.
+ * Copyright 2010-2017, Haiku, Inc. All Rights Reserved.
  * Distributed under the terms of the MIT License.
  *
  * Authors:
@@ -58,9 +58,8 @@ NotificationServer::MessageReceived(BMessage* message)
 			if (!fWindow)
 				return;
 
-			int32 type = 0;
-
 			// Emit a sound for this event
+			int32 type = 0;
 			if (message->FindInt32("type", &type) == B_OK) {
 				if (type < (int32)(sizeof(kSoundNames) / sizeof(const char*)))
 					system_beep(kSoundNames[type]);
@@ -68,17 +67,6 @@ NotificationServer::MessageReceived(BMessage* message)
 
 			// Let the notification window handle this message
 			BMessenger(fWindow).SendMessage(message);
-			
-		/*	BMessenger messenger = message->ReturnAddress();
-			app_info info;
-			status_t result = 0;
-				if (messenger.IsValid())
-					result = be_roster->GetRunningAppInfo(messenger.Team(), &info);
-			BString text("Messenger valid: ");
-			text.Append(messenger.IsValid()?"true":"false");
-			text.Append("\nSig: ").Append(info.signature);
-			text.Append("\nResult: ").Append(strerror(result));
-			(new BAlert("sig", text, "OK"))->Go(NULL);*/
 			break;
 		}
 		default:

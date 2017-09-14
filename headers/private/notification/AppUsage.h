@@ -24,7 +24,6 @@ public:
 										AppUsage(const char* name,
 											const char* signature,
 											bool allow = true);
-										~AppUsage();
 
 	virtual	bool						AllowsTypeCode(type_code code) const;
 	virtual	status_t					Flatten(void* buffer, ssize_t numBytes) const;

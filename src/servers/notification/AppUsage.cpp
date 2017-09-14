@@ -38,14 +38,6 @@ AppUsage::AppUsage(const char* name, const char* signature, bool allow)
 }
 
 
-AppUsage::~AppUsage()
-{
-/*	notification_t::iterator nIt;
-	for (nIt = fNotifications.begin(); nIt != fNotifications.end(); nIt++)
-		delete nIt->second;*/
-}
-
-
 bool
 AppUsage::AllowsTypeCode(type_code code) const
 {
@@ -61,10 +53,6 @@ AppUsage::Flatten(void* buffer, ssize_t numBytes) const
 	msg.AddString("signature", fSignature);
 	msg.AddBool("allow", fAllow);
 
-/*	notification_t::const_iterator nIt;
-	for (nIt = fNotifications.begin(); nIt != fNotifications.end(); nIt++)
-		msg.AddFlat("notification", nIt->second);*/
-
 	if (numBytes < msg.FlattenedSize())
 		return B_ERROR;
 
@@ -79,10 +67,6 @@ AppUsage::FlattenedSize() const
 	msg.AddString("name", fAppName);
 	msg.AddString("signature", fSignature);
 	msg.AddBool("allow", fAllow);
-/*
-	notification_t::const_iterator nIt;
-	for (nIt = fNotifications.begin(); nIt != fNotifications.end(); nIt++)
-		msg.AddFlat("notification", nIt->second);*/
 
 	return msg.FlattenedSize();
 }
@@ -118,21 +102,6 @@ AppUsage::Unflatten(type_code code, const void* buffer,
 		msg.FindString("name", &fAppName);
 		msg.FindString("signature", &fSignature);
 		msg.FindBool("allow", &fAllow);
-
-/*		type_code type;
-		int32 count = 0;
-
-		status = msg.GetInfo("notification", &type, &count);
-		if (status != B_OK)
-			return status;
-
-		for (int32 i = 0; i < count; i++) {
-			NotificationReceived *notification = new NotificationReceived();
-			msg.FindFlat("notification", i, notification);
-			fNotifications[notification->Title()] = notification;
-		}
-
-		status = B_OK;*/
 	}
 	
 	return status;
@@ -152,27 +121,6 @@ AppUsage::Signature()
 	return fSignature.String();
 }
 
-/*
-bool
-AppUsage::Allowed(const char* title, notification_type type)
-{
-	bool allowed = fAllow;
-
-	if (allowed) {
-		notification_t::iterator nIt = fNotifications.find(title);
-		if (nIt == fNotifications.end()) {
-			allowed = true;		
-			fNotifications[title] = new NotificationReceived(title, type);
-		} else {
-			allowed = nIt->second->Allowed();
-			nIt->second->UpdateTimeStamp();
-			nIt->second->SetType(type);
-		}
-	}
-
-	return allowed;
-}
-*/
 
 bool
 AppUsage::Allowed()
@@ -186,29 +134,3 @@ AppUsage::SetAllowed(bool allow)
 {
 	fAllow = allow;
 }
-
-/*
-NotificationReceived*
-AppUsage::NotificationAt(int32 index)
-{
-	notification_t::iterator nIt = fNotifications.begin();
-	for (int32 i = 0; i < index; i++)
-		nIt++;
-
-	return nIt->second;
-}
-
-
-int32
-AppUsage::Notifications()
-{
-	return fNotifications.size();
-}
-
-
-void
-AppUsage::AddNotification(NotificationReceived* notification)
-{
-	fNotifications[notification->Title()] = notification;
-}
-*/

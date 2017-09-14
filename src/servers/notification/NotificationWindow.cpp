@@ -49,13 +49,6 @@ property_info main_prop_list[] = {
 };
 
 
-//const float kCloseSize				= 6;
-//const float kExpandSize				= 8;
-//const float kPenSize				= 1;
-//const float kEdgePadding			= 2;
-//const float kSmallPadding			= 2;
-
-
 NotificationWindow::NotificationWindow()
 	:
 	BWindow(BRect(0, 0, -1, -1), B_TRANSLATE_MARK("Notification"), 
@@ -169,30 +162,13 @@ NotificationWindow::MessageReceived(BMessage* message)
 				bigtime_t timeout;
 				if (message->FindInt64("timeout", &timeout) != B_OK)
 					timeout = fTimeout;
-	/*			BMessenger messenger = message->ReturnAddress();
-				app_info info;
-
-				if (messenger.IsValid()) {
-					be_roster->GetRunningAppInfo(messenger.Team(), &info);
-					printf("Messenger valid, found sig %s\n", info.signature);
-				}
-				else {
-					be_roster->GetAppInfo("application/x-vnd.Haiku-Terminal", &info);
-					printf("Messenger not valid, using Terminal\n");
-				}*/
-	//			BString source(notification->Source());
-				BString sourceSignature(message->GetString("source_signature", ""));
+				BString sourceSignature(message->GetString("source_signature",
+					""));
 				BString sourceName(message->GetString("source_name", ""));
-				
-/*				if (sourceSignature.Compare("") != 0) {
-					printf("Source valid, found sig %s\n", sourceSignature.String());
-				}
-				else
-					printf("Source not valid\n");*/
 
 				bool allow = false;
-				appfilter_t::iterator it = fAppFilters.find(sourceSignature.String());
-//				appfilter_t::iterator it = fAppFilters.find(info.signature);
+				appfilter_t::iterator it =
+					fAppFilters.find(sourceSignature.String());
 				
 				AppUsage* appUsage = NULL;
 				if (it == fAppFilters.end()) {
@@ -200,19 +176,13 @@ NotificationWindow::MessageReceived(BMessage* message)
 						&& sourceName.Length() > 0) {
 						appUsage = new AppUsage(sourceName.String(),
 							sourceSignature.String(), true);
-					//appUsage = new AppUsage(path.Leaf(), info.signature, true);
-
-				//	appUsage->Allowed(notification->Title(),
-				//			notification->Type());
-					//fAppFilters[info.signature] = appUsage;
 						fAppFilters[sourceSignature.String()] = appUsage;
 						// TODO save back to settings file
 					}
 					allow = true;
 				} else {
 					appUsage = it->second;
-					allow = appUsage->Allowed();//notification->Title(),
-						//notification->Type());
+					allow = appUsage->Allowed();
 				}
 
 				if (allow) {
@@ -237,31 +207,6 @@ NotificationWindow::MessageReceived(BMessage* message)
 					reply.AddInt32("error", B_OK);
 				} else
 					reply.AddInt32("error", B_NOT_ALLOWED);
-				
-				// Cache notification
-			//	BString text("Group: ");
-			//	text.Append(notification->Group()).Append("\nSig: ").Append(info.signature);
-			//	text.Append("\nMessenger valid: ").Append(messenger.IsValid()?"true":"false");
-			//	(new BAlert("sig", text, "OK"))->Go(NULL);
-				BPath path = fCachePath;
-				BString group(notification->Group());
-				if (group == "")
-					path.Append("_no_group");
-				else
-					path.Append(group);
-				BMessage archive(kNotificationsArchive);
-				BFile file(path.Path(), B_READ_ONLY | B_CREATE_FILE);
-				archive.Unflatten(&file);
-				file.Unset();
-				BMessage notificationData(kNotificationData);
-				notificationData.AddMessage(kNameNotificationMessage, message);
-				notificationData.AddBool(kNameWasAllowed, allow);
-				notificationData.AddInt32(kNameTimestamp, time(NULL));
-				archive.AddMessage(kNameNotificationData, &notificationData);
-				file.SetTo(path.Path(), B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE);
-				archive.Flatten(&file);
-				file.Unset();
-				
 			} else {
 				reply.what = B_MESSAGE_NOT_UNDERSTOOD;
 				reply.AddInt32("error", B_ERROR);
@@ -270,18 +215,6 @@ NotificationWindow::MessageReceived(BMessage* message)
 			message->SendReply(&reply);
 			break;
 		}
-/*		case kRemoveView:
-		{
-			NotificationView* view = NULL;
-			if (message->FindPointer("view", (void**)&view) != B_OK)
-				return;
-
-			views_t::iterator it = find(fViews.begin(), fViews.end(), view);
-
-			if (it != fViews.end())
-				fViews.erase(it);
-			break;
-		}*/
 		case kRemoveGroupView:
 		{
 			AppGroupView* view = NULL;
@@ -308,52 +241,6 @@ NotificationWindow::MessageReceived(BMessage* message)
 			BWindow::MessageReceived(message);
 	}
 }
-
-/*
-BHandler*
-NotificationWindow::ResolveSpecifier(BMessage* msg, int32 index,
-	BMessage* spec, int32 form, const char* prop)
-{
-	BPropertyInfo prop_info(main_prop_list);
-	BHandler* handler = NULL;
-
-	if (strcmp(prop,"message") == 0) {
-		switch (msg->what) {
-			case B_CREATE_PROPERTY:
-			{
-				msg->PopSpecifier();
-				handler = this;
-				break;
-			}
-			case B_SET_PROPERTY:
-			case B_GET_PROPERTY:
-			{
-				int32 i;
-
-				if (spec->FindInt32("index", &i) != B_OK)
-					i = -1;
-
-				if (i >= 0 && i < (int32)fViews.size()) {
-					msg->PopSpecifier();
-					handler = fViews[i];
-				} else
-					handler = NULL;
-				break;
-			}
-			case B_COUNT_PROPERTIES:
-				msg->PopSpecifier();
-				handler = this;
-				break;
-			default:
-				break;
-		}
-	}
-
-	if (!handler)
-		handler = BWindow::ResolveSpecifier(msg, index, spec, form, prop);
-
-	return handler;
-}*/
 
 
 icon_size
@@ -390,17 +277,6 @@ NotificationWindow::_ShowHide()
 		Show();
 	}
 }
-
-/*
-void
-NotificationWindow::NotificationViewSwapped(NotificationView* stale,
-	NotificationView* fresh)
-{
-	views_t::iterator it = find(fViews.begin(), fViews.end(), stale);
-
-	if (it != fViews.end())
-		*it = fresh;
-}*/
 
 
 void
@@ -526,13 +402,6 @@ NotificationWindow::_LoadGeneralSettings(BMessage& settings)
 		fTimeout = kDefaultTimeout;
 	fTimeout *= 1000000;
 		// Convert from seconds to microseconds
-
-	// Notify the view about the change
-/*	views_t::iterator it;
-	for (it = fViews.begin(); it != fViews.end(); ++it) {
-		NotificationView* view = (*it);
-		view->Invalidate();
-	}*/
 }
 
 
@@ -557,9 +426,4 @@ NotificationWindow::_LoadDisplaySettings(BMessage& settings)
 		AppGroupView* view = aIt->second;
 		view->Invalidate();
 	}
-/*	views_t::iterator vIt;
-	for (vIt = fViews.begin(); vIt != fViews.end(); ++vIt) {
-		NotificationView* view = (*vIt);
-		view->Invalidate();
-	}*/
 }

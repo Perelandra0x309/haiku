@@ -29,12 +29,6 @@ typedef std::map<BString, AppGroupView*> appview_t;
 typedef std::map<BString, AppUsage*> appfilter_t;
 typedef std::vector<NotificationView*> views_t;
 
-//extern const float kEdgePadding;
-//extern const float kSmallPadding;
-//extern const float kCloseSize;
-//extern const float kExpandSize;
-//extern const float kPenSize;
-
 const uint32 kRemoveGroupView = 'RGVi';
 
 
@@ -48,8 +42,6 @@ public:
 	virtual	void					WorkspaceActivated(int32, bool);
 	virtual	void					FrameResized(float width, float height);
 	virtual	void					ScreenChanged(BRect frame, color_space mode);
-//	virtual	BHandler*				ResolveSpecifier(BMessage*, int32, BMessage*,
-//										int32, const char*);
 										
 			icon_size				IconSize();
 			int32					Timeout();
@@ -59,10 +51,6 @@ public:
 
 private:
 	friend class AppGroupView;
-
-//			void					NotificationViewSwapped(
-//										NotificationView* stale,
-//										NotificationView* fresh);
 
 			void					SetPosition();
 			void					_LoadSettings(bool startMonitor = false);
