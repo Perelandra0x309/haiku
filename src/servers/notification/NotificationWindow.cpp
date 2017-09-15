@@ -137,9 +137,8 @@ NotificationWindow::MessageReceived(BMessage* message)
 				bigtime_t timeout;
 				if (message->FindInt64("timeout", &timeout) != B_OK)
 					timeout = fTimeout;
-				BString sourceSignature(message->GetString("source_signature",
-					""));
-				BString sourceName(message->GetString("source_name", ""));
+				BString sourceSignature(notification->SourceSignature());
+				BString sourceName(notification->SourceName());
 
 				bool allow = false;
 				appfilter_t::iterator it =

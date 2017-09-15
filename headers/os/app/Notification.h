@@ -35,6 +35,7 @@ public:
 	virtual	status_t			Archive(BMessage* archive, bool deep = true) const;
 
 			const char*			SourceSignature() const;
+			const char*			SourceName() const;
 
 			notification_type	Type() const;
 

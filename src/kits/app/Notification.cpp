@@ -252,6 +252,17 @@ BNotification::SourceSignature() const
 }
 
 
+/*! \brief Returns source application name.
+
+	\return Source application name.
+*/
+const char*
+BNotification::SourceName() const
+{
+	return fSourceName;
+}
+
+
 /*! \brief Notification's type.
 
 	\return A value of the notification_type enum that represents
@@ -539,8 +550,6 @@ status_t
 BNotification::Send(bigtime_t timeout)
 {
 	BMessage msg(kNotificationMessage);
-	msg.AddString("source_signature", fSourceSignature.String());
-	msg.AddString("source_name", fSourceName.String());
 
 	// Archive notification
 	status_t ret = Archive(&msg);
