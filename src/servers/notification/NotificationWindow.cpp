@@ -30,6 +30,7 @@
 
 #include "AppGroupView.h"
 #include "AppUsage.h"
+#include "DeskbarShelfView.h"
 
 
 #undef B_TRANSLATION_CONTEXT
@@ -56,7 +57,8 @@ NotificationWindow::NotificationWindow()
 		| B_AVOID_FOCUS | B_NOT_CLOSABLE | B_NOT_ZOOMABLE | B_NOT_MINIMIZABLE
 		| B_NOT_RESIZABLE | B_NOT_MOVABLE | B_AUTO_UPDATE_SIZE_LIMITS, 
 		B_ALL_WORKSPACES),
-	fShouldRun(true)
+	fShouldRun(true),
+	fShowShelfView(true)
 {
 	status_t result = find_directory(B_USER_CACHE_DIRECTORY, &fCachePath);
 	fCachePath.Append("Notifications");
@@ -331,6 +333,7 @@ NotificationWindow::_LoadSettings(bool startMonitor)
 	_LoadGeneralSettings(settings);
 	_LoadDisplaySettings(settings);
 	_LoadAppFilters(settings);
+	_ShowShelfView(true);
 
 	if (startMonitor) {
 		node_ref nref;
@@ -382,6 +385,9 @@ NotificationWindow::_LoadGeneralSettings(BMessage& settings)
 		fTimeout = kDefaultTimeout;
 	fTimeout *= 1000000;
 		// Convert from seconds to microseconds
+
+	if (settings.FindBool(kShowShelfView, &fShowShelfView) != B_OK)
+		fShowShelfView = true;
 }
 
 
@@ -407,4 +413,26 @@ NotificationWindow::_LoadDisplaySettings(BMessage& settings)
 		AppGroupView* view = aIt->second;
 		view->Invalidate();
 	}
+}
+
+
+void
+NotificationWindow::_ShowShelfView(bool show)
+{
+	BDeskbar deskbar;
+	// Don't add another DeskbarShelfView to the Deskbar if one is already
+	// attached
+	if (show && !deskbar.HasItem(kShelfviewName)) {
+		BView* shelfView = new DeskbarShelfView();
+		status_t status = deskbar.AddItem(shelfView);
+		if (status < B_OK) {
+			fprintf(stderr, "Can't add deskbar replicant: %s\n",
+				strerror(status));
+			return;
+		}
+		delete shelfView;
+	}
+	// Remove DeskbarShelfView if there is one in the deskbar
+	else if (!show && deskbar.HasItem(kShelfviewName))
+		deskbar.RemoveItem(kShelfviewName);
 }

@@ -56,6 +56,7 @@ private:
 			void					_LoadAppFilters(BMessage& settings);
 			void					_LoadGeneralSettings(BMessage& settings);
 			void					_LoadDisplaySettings(BMessage& settings);
+			void					_ShowShelfView(bool show);
 
 			appview_t				fAppViews;
 			appfilter_t				fAppFilters;
@@ -65,6 +66,7 @@ private:
 			int32					fTimeout;
 			bool					fShouldRun;
 			BPath					fCachePath;
+			bool					fShowShelfView;
 };
 
 extern property_info main_prop_list[];

@@ -19,6 +19,7 @@ extern const char* kSettingsFile;
 // General settings
 extern const char* kAutoStartName;
 extern const char* kTimeoutName;
+extern const char* kShowShelfView;
 extern const char* kWidthName;
 extern const char* kIconSizeName;
 
