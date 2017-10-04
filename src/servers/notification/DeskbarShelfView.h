@@ -1,12 +1,9 @@
 /*
  * Copyright 2017, Haiku, Inc. All Rights Reserved.
  * Distributed under the terms of the MIT License.
- *
- * Authors:
- *		Brian Hill, supernova@warpmail.net
  */
-#ifndef DESKBAR_SHELF_VIEW_H
-#define DESKBAR_SHELF_VIEW_H
+#ifndef _DESKBAR_SHELF_VIEW_H
+#define _DESKBAR_SHELF_VIEW_H
 
 
 #include <stdio.h>
@@ -47,4 +44,4 @@ private:
 	BBitmap*				fNewIcon;
 };
 
-#endif	/* DESKBAR_SHELF_VIEW_H */
+#endif	// _DESKBAR_SHELF_VIEW_H

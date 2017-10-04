@@ -79,6 +79,8 @@ NotificationWindow::NotificationWindow()
 
 NotificationWindow::~NotificationWindow()
 {
+	_ShowShelfView(false);
+
 	appfilter_t::iterator aIt;
 	for (aIt = fAppFilters.begin(); aIt != fAppFilters.end(); aIt++)
 		delete aIt->second;
@@ -187,6 +189,31 @@ NotificationWindow::MessageReceived(BMessage* message)
 					reply.AddInt32("error", B_OK);
 				} else
 					reply.AddInt32("error", B_NOT_ALLOWED);
+
+				// Cache notification
+			//	BString text("Group: ");
+			//	text.Append(notification->Group()).Append("\nSig: ").Append(info.signature);
+			//	text.Append("\nMessenger valid: ").Append(messenger.IsValid()?"true":"false");
+			//	(new BAlert("sig", text, "OK"))->Go(NULL);
+				BPath path = fCachePath;
+				BString group(notification->Group());
+				if (group == "")
+					path.Append("_no_group");
+				else
+					path.Append(group);
+				BMessage archive(kNotificationsArchive);
+				BFile file(path.Path(), B_READ_ONLY | B_CREATE_FILE);
+				archive.Unflatten(&file);
+				file.Unset();
+				BMessage notificationData(kNotificationData);
+				notificationData.AddMessage(kNameNotificationMessage, message);
+				notificationData.AddBool(kNameWasAllowed, allow);
+				notificationData.AddInt32(kNameTimestamp, time(NULL));
+				archive.AddMessage(kNameNotificationData, &notificationData);
+				file.SetTo(path.Path(), B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE);
+				archive.Flatten(&file);
+				file.Unset();
+
 			} else {
 				reply.what = B_MESSAGE_NOT_UNDERSTOOD;
 				reply.AddInt32("error", B_ERROR);
@@ -425,11 +452,9 @@ NotificationWindow::_ShowShelfView(bool show)
 	if (show && !deskbar.HasItem(kShelfviewName)) {
 		BView* shelfView = new DeskbarShelfView();
 		status_t status = deskbar.AddItem(shelfView);
-		if (status < B_OK) {
+		if (status != B_OK)
 			fprintf(stderr, "Can't add deskbar replicant: %s\n",
 				strerror(status));
-			return;
-		}
 		delete shelfView;
 	}
 	// Remove DeskbarShelfView if there is one in the deskbar

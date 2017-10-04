@@ -123,3 +123,4 @@ main(int argc, char* argv[])
 
 	return error == B_OK ? EXIT_SUCCESS : EXIT_FAILURE;
 }
+
