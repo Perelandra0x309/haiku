@@ -18,6 +18,7 @@
 #include <Alert.h>
 #include <Application.h>
 #include <Catalog.h>
+#include <DateTime.h>
 #include <Deskbar.h>
 #include <Directory.h>
 #include <File.h>
@@ -196,11 +197,24 @@ NotificationWindow::MessageReceived(BMessage* message)
 			//	text.Append("\nMessenger valid: ").Append(messenger.IsValid()?"true":"false");
 			//	(new BAlert("sig", text, "OK"))->Go(NULL);
 				BPath path = fCachePath;
-				BString group(notification->Group());
+		/*		BString group(notification->Group());
 				if (group == "")
 					path.Append("_no_group");
 				else
-					path.Append(group);
+					path.Append(group);*/
+				BDate currentDate(time(NULL));
+				BString dateString;
+				dateString << currentDate.Year();
+				int32 month = currentDate.Month();
+				if (month < 10)
+					dateString.Append("0");
+				dateString << month;
+				int32 day = currentDate.Day();
+				if (day < 10)
+					dateString.Append("0");
+				dateString << day;
+		//		printf("Date: %s\n", dateString.String());
+				path.Append(dateString.String());
 				BMessage archive(kNotificationsArchive);
 				BFile file(path.Path(), B_READ_ONLY | B_CREATE_FILE);
 				archive.Unflatten(&file);
