@@ -59,7 +59,8 @@ NotificationWindow::NotificationWindow()
 		| B_NOT_RESIZABLE | B_NOT_MOVABLE | B_AUTO_UPDATE_SIZE_LIMITS, 
 		B_ALL_WORKSPACES),
 	fShouldRun(true),
-	fShowShelfView(true)
+	fShowShelfView(true),
+	fMuteAllFlag(false)
 {
 	status_t result = find_directory(B_USER_CACHE_DIRECTORY, &fCachePath);
 	fCachePath.Append("Notifications");
@@ -143,29 +144,29 @@ NotificationWindow::MessageReceived(BMessage* message)
 			BNotification* notification = new BNotification(message);
 
 			if (notification->InitCheck() == B_OK) {
-				bigtime_t timeout;
-				if (message->FindInt64("timeout", &timeout) != B_OK)
-					timeout = fTimeout;
-				BString sourceSignature(notification->SourceSignature());
-				BString sourceName(notification->SourceName());
-
-				bool allow = false;
-				appfilter_t::iterator it =
-					fAppFilters.find(sourceSignature.String());
 				
-				AppUsage* appUsage = NULL;
-				if (it == fAppFilters.end()) {
-					if (sourceSignature.Length() > 0
-						&& sourceName.Length() > 0) {
-						appUsage = new AppUsage(sourceName.String(),
-							sourceSignature.String(), true);
-						fAppFilters[sourceSignature.String()] = appUsage;
-						// TODO save back to settings file
+				bool allow = false;
+				
+				if (!fMuteAllFlag) {
+					BString sourceSignature(notification->SourceSignature());
+					BString sourceName(notification->SourceName());
+	
+					appfilter_t::iterator it =
+						fAppFilters.find(sourceSignature.String());
+					AppUsage* appUsage = NULL;
+					if (it == fAppFilters.end()) {
+						if (sourceSignature.Length() > 0
+							&& sourceName.Length() > 0) {
+							appUsage = new AppUsage(sourceName.String(),
+								sourceSignature.String(), true);
+							fAppFilters[sourceSignature.String()] = appUsage;
+							// TODO save back to settings file
+						}
+						allow = true;
+					} else {
+						appUsage = it->second;
+						allow = appUsage->Allowed();
 					}
-					allow = true;
-				} else {
-					appUsage = it->second;
-					allow = appUsage->Allowed();
 				}
 
 				if (allow) {
@@ -180,9 +181,12 @@ NotificationWindow::MessageReceived(BMessage* message)
 					} else
 						group = aIt->second;
 
+					bigtime_t timeout;
+					if (message->FindInt64("timeout", &timeout) != B_OK)
+						timeout = fTimeout;
+					
 					NotificationView* view = new NotificationView(notification,
 						timeout, fIconSize);
-
 					group->AddInfo(view);
 
 					_ShowHide();
@@ -258,6 +262,28 @@ NotificationWindow::MessageReceived(BMessage* message)
 			_ShowHide();
 			break;
 		}
+		case kDeskbarRegistration:
+		{
+			status_t result = message->FindMessenger(kKeyMessenger,
+				&fDeskbarViewMessenger);
+			if (result != B_OK || !fDeskbarViewMessenger.IsValid()) {
+				BAlert* alert = new BAlert("error",
+					B_TRANSLATE("The Notification server could not "
+					"successfully connect to its deskbar replicant.  The "
+					"replicant will not indicate when notifications are "
+					"muted."), B_TRANSLATE("OK"),
+					NULL, NULL, B_WIDTH_AS_USUAL, B_WARNING_ALERT);
+				alert->SetShortcut(0, B_ESCAPE);
+				alert->Go(NULL);
+			}
+			// TODO send reply
+			_SyncDeskbar();
+			break;
+		}
+		case kMuteAllClicked:
+			fMuteAllFlag = !fMuteAllFlag;
+			_SyncDeskbar();
+			break;
 		default:
 			BWindow::MessageReceived(message);
 	}
@@ -474,4 +500,15 @@ NotificationWindow::_ShowShelfView(bool show)
 	// Remove DeskbarShelfView if there is one in the deskbar
 	else if (!show && deskbar.HasItem(kShelfviewName))
 		deskbar.RemoveItem(kShelfviewName);
+}
+
+
+void
+NotificationWindow::_SyncDeskbar()
+{
+	if (fDeskbarViewMessenger.IsValid()) {
+		BMessage message(kDeskbarSync);
+		message.AddBool(kKeyMuteAll, fMuteAllFlag);
+		fDeskbarViewMessenger.SendMessage(&message);
+	}
 }

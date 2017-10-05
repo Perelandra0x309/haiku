@@ -17,6 +17,7 @@
 #include <PropertyInfo.h>
 #include <Roster.h>
 
+#include "DeskbarShelfView.h"
 #include "NotificationWindow.h"
 
 
@@ -67,6 +68,12 @@ NotificationServer::MessageReceived(BMessage* message)
 
 			// Let the notification window handle this message
 			BMessenger(fWindow).SendMessage(message);
+			break;
+		}
+		case kMuteAllClicked:
+		case kDeskbarRegistration:
+		{
+			fWindow->PostMessage(message);
 			break;
 		}
 		default:

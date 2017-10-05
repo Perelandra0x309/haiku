@@ -8,7 +8,9 @@
 
 
 #include <Application.h>
+#include <Catalog.h>
 #include <IconUtils.h>
+#include <MenuItem.h>
 #include <NodeInfo.h>
 #include <Resources.h>
 #include <Roster.h>
@@ -17,14 +19,21 @@
 
 const char* kShelfviewName = "notifications_shelfview";
 const char* kKeyMessenger = "messenger";
+const char* kKeyMuteAll = "mute_all";
+
+#undef B_TRANSLATION_CONTEXT
+#define B_TRANSLATION_CONTEXT "DeskbarShelfView"
 
 
 DeskbarShelfView::DeskbarShelfView()
 	:
 	BView(BRect(0, 0, 15, 15), kShelfviewName, B_FOLLOW_NONE, B_WILL_DRAW),
-	fDrawNewIcon(false),
+//	fDrawNewIcon(false),
+	fIconState(ICONSTATE_DEFAULT),
 	fIcon(NULL),
-	fNewIcon(NULL)
+	fNewIcon(NULL),
+	fMuteIcon(NULL),
+	fMenu(NULL)
 {
 	// Standard icon
 	app_info info;
@@ -39,19 +48,30 @@ DeskbarShelfView::DeskbarShelfView()
 		fIcon = NULL;
 	}
 
-	// New notification icon
 	result = B_ERROR;
 	BResources resources(&info.ref);
 	if (resources.InitCheck() == B_OK) {
 		size_t size;
-		const void* data = resources.LoadResource(B_VECTOR_ICON_TYPE, 1001, &size);
+		// New notification icon
+		const void* data = resources.LoadResource(B_VECTOR_ICON_TYPE, 1001,
+			&size);
 		if (data != NULL) {
 			fNewIcon = new BBitmap(Bounds(), B_RGBA32);
 			if (fNewIcon->InitCheck() == B_OK)
 				result = BIconUtils::GetVectorIcon((const uint8 *)data,
 					size, fNewIcon);
 		}
+		// Mute icon
+		const void* mutedata = resources.LoadResource(B_VECTOR_ICON_TYPE,
+			1002, &size);
+		if (mutedata != NULL) {
+			fMuteIcon = new BBitmap(Bounds(), B_RGBA32);
+			if (fMuteIcon->InitCheck() == B_OK)
+				result = BIconUtils::GetVectorIcon((const uint8 *)mutedata,
+					size, fMuteIcon);
+		}
 	}
+
 	if (result != B_OK) {
 		printf("Error creating new notification bitmap\n");
 		delete fNewIcon;
@@ -64,9 +84,12 @@ DeskbarShelfView::DeskbarShelfView()
 DeskbarShelfView::DeskbarShelfView(BMessage* message)
 	:
 	BView(message),
-	fDrawNewIcon(false),
+//	fDrawNewIcon(false),
+	fIconState(ICONSTATE_DEFAULT),
 	fIcon(NULL),
-	fNewIcon(NULL)
+	fNewIcon(NULL),
+	fMuteIcon(NULL),
+	fMenu(NULL)
 {
 	BMessage iconArchive;
 	status_t result = message->FindMessage("fIconArchive", &iconArchive);
@@ -76,6 +99,10 @@ DeskbarShelfView::DeskbarShelfView(BMessage* message)
 	result = message->FindMessage("fNewIconArchive", &newIconArchive);
 	if (result == B_OK)
 		fNewIcon = new BBitmap(&newIconArchive);
+	BMessage muteIconArchive;
+	result = message->FindMessage("fMuteIconArchive", &muteIconArchive);
+	if (result == B_OK)
+		fMuteIcon = new BBitmap(&muteIconArchive);
 }
 
 
@@ -83,6 +110,8 @@ DeskbarShelfView::~DeskbarShelfView()
 {
 	delete fIcon;
 	delete fNewIcon;
+	delete fMuteIcon;
+	delete fMenu;
 }
 
 
@@ -96,6 +125,8 @@ DeskbarShelfView::AttachedToWindow()
 		SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR));
 	SetLowColor(ViewColor());
 	Invalidate();
+
+	_BuildMenu();
 
 	// Register with the notification server
 	BMessenger messenger(this);
@@ -139,6 +170,11 @@ DeskbarShelfView::Archive(BMessage* data, bool deep) const
 		fNewIcon->Archive(&newArchive);
 		data->AddMessage("fNewIconArchive", &newArchive);
 	}
+	if (fMuteIcon != NULL) {
+		BMessage muteArchive;
+		fMuteIcon->Archive(&muteArchive);
+		data->AddMessage("fMuteIconArchive", &muteArchive);
+	}
 	return B_NO_ERROR;
 }
 
@@ -148,7 +184,7 @@ DeskbarShelfView::MessageReceived(BMessage* message)
 {
 	switch(message->what)
 	{
-		case kShowNewIcon:
+/*		case kShowNewIcon:
 			if (fDrawNewIcon)
 				break;
 			fDrawNewIcon = true;
@@ -160,6 +196,38 @@ DeskbarShelfView::MessageReceived(BMessage* message)
 				break;
 			fDrawNewIcon = false;
 			Invalidate();
+			break;*/
+		case kMuteAllClicked:
+		{
+			status_t rc = B_ERROR;
+			// TODO create single shared messenger
+			BMessenger appMessenger("application/x-vnd.Haiku-notification_server", -1, &rc);
+			if(appMessenger.IsValid())
+				appMessenger.SendMessage(kMuteAllClicked);
+			// TODO else
+			
+		//	BMenuItem* item = fMenu->ItemAt(0);
+		//	item->SetMarked(!item->IsMarked());
+			break;
+		}
+		case kDeskbarSync:
+		{
+			bool mute;
+			status_t result = message->FindBool(kKeyMuteAll, &mute);
+			if (result == B_OK) {
+				BMenuItem* item = fMenu->ItemAt(0);
+				item->SetMarked(mute);
+				// icon
+				if (mute)
+					fIconState = ICONSTATE_MUTE;
+				else
+					fIconState = ICONSTATE_DEFAULT;
+				Invalidate();
+			}
+			break;
+		}
+		case kShowSettings:
+			be_roster->Launch("application/x-vnd.Haiku-Notifications");
 			break;
 
 		default:
@@ -171,7 +239,18 @@ DeskbarShelfView::MessageReceived(BMessage* message)
 void
 DeskbarShelfView::Draw(BRect rect)
 {
-	BBitmap* icon = fDrawNewIcon ? fNewIcon : fIcon;
+	BBitmap* icon = NULL;// = fDrawNewIcon ? fNewIcon : fIcon;
+	switch (fIconState) {
+		case ICONSTATE_DEFAULT:
+			icon = fIcon;
+			break;
+		case ICONSTATE_NEW:
+			icon = fNewIcon;
+			break;
+		case ICONSTATE_MUTE:
+			icon = fMuteIcon;
+			break;
+	}
 	if (icon == NULL)
 		return;
 
@@ -188,7 +267,7 @@ DeskbarShelfView::MouseDown(BPoint pos)
 		_Quit(); //TODO show alert?
 		return;
 	}
-	status_t rc = B_ERROR;
+/*	status_t rc = B_ERROR;
 	BMessenger appMessenger("application/x-vnd.Haiku-notification_server", -1, &rc);
 	if(!appMessenger.IsValid())
 		return;
@@ -198,7 +277,11 @@ DeskbarShelfView::MouseDown(BPoint pos)
 	if (fDrawNewIcon) {
 		fDrawNewIcon = false;
 		Invalidate();
-	}
+	}*/
+	ConvertToScreen(&pos);
+	if (fMenu)
+		fMenu->Go(pos, true, true, BRect(pos.x - 2, pos.y - 2,
+			pos.x + 2, pos.y + 2), true);
 }
 
 
@@ -207,4 +290,28 @@ DeskbarShelfView::_Quit()
 {
 	BDeskbar deskbar;
 	deskbar.RemoveItem(kShelfviewName);
+}
+
+
+void
+DeskbarShelfView::_BuildMenu()
+{
+	delete fMenu;
+	fMenu = new BPopUpMenu(B_EMPTY_STRING, false, false);
+	fMenu->SetFont(be_plain_font);
+	fMenu->AddItem(new BMenuItem(B_TRANSLATE_COMMENT("Mute all notifications",
+		"Deskbar menu option"), new BMessage(kMuteAllClicked)));
+	fMenu->AddSeparatorItem();
+	fMenu->AddItem(new BMenuItem(B_TRANSLATE_COMMENT("Show History"
+		B_UTF8_ELLIPSIS, "Deskbar menu option"), new BMessage('test')));
+	fMenu->AddItem(new BMenuItem(B_TRANSLATE_COMMENT("Settings"B_UTF8_ELLIPSIS,
+		"Deskbar menu option"), new BMessage(kShowSettings)));
+
+	BMenuItem* item;
+	BMessage* msg;
+	for (int32 i = fMenu->CountItems(); i-- > 0;) {
+		item = fMenu->ItemAt(i);
+		if (item && (msg = item->Message()) != NULL)
+			item->SetTarget(this);
+	}
 }

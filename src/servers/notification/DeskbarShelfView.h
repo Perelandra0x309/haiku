@@ -10,17 +10,28 @@
 
 #include <Bitmap.h>
 #include <Deskbar.h>
+#include <PopUpMenu.h>
 #include <Rect.h>
 #include <View.h>
 
 extern const char* kShelfviewName;
 extern const char* kKeyMessenger;
+extern const char* kKeyMuteAll;
 
-const uint32 kDeskbarReplicantClicked = 'DeCl';
+//const uint32 kDeskbarReplicantClicked = 'DeCl';
 const uint32 kDeskbarRegistration = 'DeRe';
-const uint32 kShowNewIcon = 'NeIc';
-const uint32 kShowStandardIcon = 'StIc';
+//const uint32 kShowNewIcon = 'NeIc';
+//const uint32 kShowStandardIcon = 'StIc';
+const uint32 kMuteAllClicked = 'MuCl';
+const uint32 kShowSettings = 'ShSe';
+const uint32 kDeskbarSync = 'DeSy';
 
+enum {
+	ICONSTATE_DEFAULT = 0,
+	ICONSTATE_NEW,
+	ICONSTATE_MUTE,
+	ICONSTATE_END
+};
 
 class _EXPORT DeskbarShelfView : public BView {
 public:
@@ -38,10 +49,14 @@ public:
 
 private:
 	void					_Quit();
+	void					_BuildMenu();
 
-	bool					fDrawNewIcon;
+//	bool					fDrawNewIcon;
+	uint32					fIconState;
 	BBitmap*				fIcon;
 	BBitmap*				fNewIcon;
+	BBitmap*				fMuteIcon;
+	BPopUpMenu*				fMenu;
 };
 
 #endif	// _DESKBAR_SHELF_VIEW_H

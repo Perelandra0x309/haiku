@@ -57,6 +57,7 @@ private:
 			void					_LoadGeneralSettings(BMessage& settings);
 			void					_LoadDisplaySettings(BMessage& settings);
 			void					_ShowShelfView(bool show);
+			void					_SyncDeskbar();
 
 			appview_t				fAppViews;
 			appfilter_t				fAppFilters;
@@ -67,6 +68,8 @@ private:
 			bool					fShouldRun;
 			BPath					fCachePath;
 			bool					fShowShelfView;
+			bool					fMuteAllFlag;
+			BMessenger				fDeskbarViewMessenger;
 };
 
 extern property_info main_prop_list[];
