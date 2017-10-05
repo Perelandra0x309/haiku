@@ -13,7 +13,7 @@ const char* kSettingsFile = "system/notifications";
 // General settings
 const char* kAutoStartName = "auto-start";
 const char* kTimeoutName = "timeout";
-const char* kShowShelfView = "show_deskbar";
+const char* kShowDeskbarName = "show_deskbar";
 
 // Display settings
 const char* kWidthName = "width";

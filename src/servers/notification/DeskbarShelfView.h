@@ -51,7 +51,6 @@ private:
 	void					_Quit();
 	void					_BuildMenu();
 
-//	bool					fDrawNewIcon;
 	uint32					fIconState;
 	BBitmap*				fIcon;
 	BBitmap*				fNewIcon;

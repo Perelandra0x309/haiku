@@ -43,6 +43,7 @@
 const uint32 kToggleNotifications = '_TSR';
 const uint32 kWidthChanged = '_WIC';
 const uint32 kTimeoutChanged = '_TIC';
+const uint32 kShowDeskbarChanged = '_SDC';
 const uint32 kServerChangeTriggered = '_SCT';
 const BString kSampleMessageID("NotificationsSample");
 
@@ -87,10 +88,16 @@ GeneralView::GeneralView(SettingsHost* host)
 		B_TRANSLATE_COMMENT(minLabel.String(), "Slider low text"),
 		B_TRANSLATE_COMMENT(maxLabel.String(), "Slider high text"));
 
+	// Deskbar replicant view
+	fShowDeskbar = new BCheckBox("deskbar",
+		B_TRANSLATE("Show status in Deskbar"),
+		new BMessage(kShowDeskbarChanged));
+
 	box->AddChild(BLayoutBuilder::Group<>(B_VERTICAL)
 		.SetInsets(B_USE_DEFAULT_SPACING)
 		.Add(fWidthSlider)
 		.Add(fDurationSlider)
+		.Add(fShowDeskbar)
 		.AddGlue()
 		.View());
 	
@@ -108,6 +115,7 @@ GeneralView::AttachedToWindow()
 	fNotificationBox->SetTarget(this);
 	fWidthSlider->SetTarget(this);
 	fDurationSlider->SetTarget(this);
+	fShowDeskbar->SetTarget(this);
 }
 
 
@@ -116,6 +124,7 @@ GeneralView::MessageReceived(BMessage* msg)
 {
 	switch (msg->what) {
 		case kToggleNotifications:
+		case kShowDeskbarChanged:
 		{
 			SettingsPane::SettingsChanged(false);
 			_EnableControls();
@@ -157,6 +166,10 @@ GeneralView::Load(BMessage& settings)
 		|| fOriginalTimeout < kMinimumTimeout)
 		fOriginalTimeout = kDefaultTimeout;
 // TODO need to save again if values outside of expected range
+
+	if (settings.FindBool(kShowDeskbarName, &fOriginalShowDeskbar) != B_OK)
+		fOriginalShowDeskbar = kDefaultShowDeskbar;
+
 	int32 setting;
 	if (settings.FindInt32(kIconSizeName, &setting) != B_OK)
 		fOriginalIconSize = kDefaultIconSize;
@@ -181,6 +194,9 @@ GeneralView::Save(BMessage& settings)
 	float width = fWidthSlider->Value() * 50;
 	settings.AddFloat(kWidthName, width);
 
+	bool showDeskbar = (fShowDeskbar->Value() == B_CONTROL_ON);
+	settings.AddBool(kShowDeskbarName, showDeskbar);
+
 	icon_size iconSize = B_LARGE_ICON;
 	settings.AddInt32(kIconSizeName, (int32)iconSize);
 
@@ -196,7 +212,10 @@ GeneralView::Revert()
 	
 	fWidthSlider->SetValue(fOriginalWidth / 50);
 	_SetWidthLabel(fOriginalWidth);
-	
+
+	fShowDeskbar->SetValue(fOriginalShowDeskbar ?
+		B_CONTROL_ON : B_CONTROL_OFF);
+
 	return B_OK;
 }
 
@@ -212,6 +231,10 @@ GeneralView::RevertPossible()
 	if (fOriginalWidth != width)
 		return true;
 
+	bool showDeskbar = (fShowDeskbar->Value() == B_CONTROL_ON);
+	if (fOriginalShowDeskbar != showDeskbar)
+		return true;
+
 	return false;
 }
 
@@ -224,6 +247,9 @@ GeneralView::Defaults()
 
 	fWidthSlider->SetValue(kDefaultWidth / 50);
 	_SetWidthLabel(kDefaultWidth);
+
+	fShowDeskbar->SetValue(kDefaultShowDeskbar ?
+		B_CONTROL_ON : B_CONTROL_OFF);
 
 	return B_OK;
 }
@@ -239,7 +265,11 @@ GeneralView::DefaultsPossible()
 	int32 width = fWidthSlider->Value() * 50;
 	if (kDefaultWidth != width)
 		return true;
-	
+
+	bool showDeskbar = (fShowDeskbar->Value() == B_CONTROL_ON);
+	if (kDefaultShowDeskbar != showDeskbar)
+		return true;
+
 	return false;
 }
 
@@ -257,6 +287,7 @@ GeneralView::_EnableControls()
 	bool enabled = fNotificationBox->Value() == B_CONTROL_ON;
 	fWidthSlider->SetEnabled(enabled);
 	fDurationSlider->SetEnabled(enabled);
+	fShowDeskbar->SetEnabled(enabled);
 }
 
 

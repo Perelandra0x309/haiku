@@ -40,9 +40,11 @@ private:
 		BCheckBox*			fNotificationBox;
 		BSlider*			fDurationSlider;
 		BSlider*			fWidthSlider;
+		BCheckBox*			fShowDeskbar;
 		
 		int32				fOriginalTimeout;
 		float				fOriginalWidth;
+		bool				fOriginalShowDeskbar;
 		icon_size			fOriginalIconSize;
 
 		void				_EnableControls();

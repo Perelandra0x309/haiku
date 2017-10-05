@@ -59,7 +59,7 @@ NotificationWindow::NotificationWindow()
 		| B_NOT_RESIZABLE | B_NOT_MOVABLE | B_AUTO_UPDATE_SIZE_LIMITS, 
 		B_ALL_WORKSPACES),
 	fShouldRun(true),
-	fShowShelfView(true),
+	fShowDeskbarView(true),
 	fMuteAllFlag(false)
 {
 	status_t result = find_directory(B_USER_CACHE_DIRECTORY, &fCachePath);
@@ -453,8 +453,8 @@ NotificationWindow::_LoadGeneralSettings(BMessage& settings)
 	fTimeout *= 1000000;
 		// Convert from seconds to microseconds
 
-	if (settings.FindBool(kShowShelfView, &fShowShelfView) != B_OK)
-		fShowShelfView = true;
+	if (settings.FindBool(kShowDeskbarName, &fShowDeskbarView) != B_OK)
+		fShowDeskbarView = true;
 }
 
 
@@ -486,6 +486,7 @@ NotificationWindow::_LoadDisplaySettings(BMessage& settings)
 void
 NotificationWindow::_ShowShelfView(bool show)
 {
+	show &= fShowDeskbarView;
 	BDeskbar deskbar;
 	// Don't add another DeskbarShelfView to the Deskbar if one is already
 	// attached
@@ -506,7 +507,7 @@ NotificationWindow::_ShowShelfView(bool show)
 void
 NotificationWindow::_SyncDeskbar()
 {
-	if (fDeskbarViewMessenger.IsValid()) {
+	if (fShowDeskbarView && fDeskbarViewMessenger.IsValid()) {
 		BMessage message(kDeskbarSync);
 		message.AddBool(kKeyMuteAll, fMuteAllFlag);
 		fDeskbarViewMessenger.SendMessage(&message);

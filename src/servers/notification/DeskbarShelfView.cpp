@@ -28,7 +28,6 @@ const char* kKeyMuteAll = "mute_all";
 DeskbarShelfView::DeskbarShelfView()
 	:
 	BView(BRect(0, 0, 15, 15), kShelfviewName, B_FOLLOW_NONE, B_WILL_DRAW),
-//	fDrawNewIcon(false),
 	fIconState(ICONSTATE_DEFAULT),
 	fIcon(NULL),
 	fNewIcon(NULL),
@@ -84,7 +83,6 @@ DeskbarShelfView::DeskbarShelfView()
 DeskbarShelfView::DeskbarShelfView(BMessage* message)
 	:
 	BView(message),
-//	fDrawNewIcon(false),
 	fIconState(ICONSTATE_DEFAULT),
 	fIcon(NULL),
 	fNewIcon(NULL),
@@ -184,19 +182,6 @@ DeskbarShelfView::MessageReceived(BMessage* message)
 {
 	switch(message->what)
 	{
-/*		case kShowNewIcon:
-			if (fDrawNewIcon)
-				break;
-			fDrawNewIcon = true;
-			Invalidate();
-			break;
-
-		case kShowStandardIcon:
-			if (!fDrawNewIcon)
-				break;
-			fDrawNewIcon = false;
-			Invalidate();
-			break;*/
 		case kMuteAllClicked:
 		{
 			status_t rc = B_ERROR;
@@ -206,8 +191,6 @@ DeskbarShelfView::MessageReceived(BMessage* message)
 				appMessenger.SendMessage(kMuteAllClicked);
 			// TODO else
 			
-		//	BMenuItem* item = fMenu->ItemAt(0);
-		//	item->SetMarked(!item->IsMarked());
 			break;
 		}
 		case kDeskbarSync:
@@ -239,7 +222,7 @@ DeskbarShelfView::MessageReceived(BMessage* message)
 void
 DeskbarShelfView::Draw(BRect rect)
 {
-	BBitmap* icon = NULL;// = fDrawNewIcon ? fNewIcon : fIcon;
+	BBitmap* icon = NULL;
 	switch (fIconState) {
 		case ICONSTATE_DEFAULT:
 			icon = fIcon;
@@ -267,17 +250,6 @@ DeskbarShelfView::MouseDown(BPoint pos)
 		_Quit(); //TODO show alert?
 		return;
 	}
-/*	status_t rc = B_ERROR;
-	BMessenger appMessenger("application/x-vnd.Haiku-notification_server", -1, &rc);
-	if(!appMessenger.IsValid())
-		return;
-	appMessenger.SendMessage(kDeskbarReplicantClicked);
-
-	// Draw the standard icon
-	if (fDrawNewIcon) {
-		fDrawNewIcon = false;
-		Invalidate();
-	}*/
 	ConvertToScreen(&pos);
 	if (fMenu)
 		fMenu->Go(pos, true, true, BRect(pos.x - 2, pos.y - 2,

@@ -67,7 +67,7 @@ private:
 			int32					fTimeout;
 			bool					fShouldRun;
 			BPath					fCachePath;
-			bool					fShowShelfView;
+			bool					fShowDeskbarView;
 			bool					fMuteAllFlag;
 			BMessenger				fDeskbarViewMessenger;
 };

@@ -27,7 +27,7 @@ extern const char* kSettingsFile;
 // General settings
 extern const char* kAutoStartName;
 extern const char* kTimeoutName;
-extern const char* kShowShelfView;
+extern const char* kShowDeskbarName;
 extern const char* kWidthName;
 extern const char* kIconSizeName;
 
@@ -40,6 +40,7 @@ const float kDefaultWidth = 300.0f;
 const float kMinimumWidth = 300.0f;
 const float kMaximumWidth = 1000.0f;
 const int32 kWidthStep = 50;
+const bool kDefaultShowDeskbar = true;
 const icon_size kDefaultIconSize = B_LARGE_ICON;
 
 #endif	// _NOTIFICATIONS_H
