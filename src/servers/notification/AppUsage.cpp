@@ -102,6 +102,13 @@ AppUsage::Unflatten(type_code code, const void* buffer,
 		msg.FindString("name", &fAppName);
 		msg.FindString("signature", &fSignature);
 		msg.FindBool("allow", &fAllow);
+		if (fAppName.IsEmpty() && !fSignature.IsEmpty()) {
+			entry_ref ref;
+			be_roster->FindApp(fSignature, &ref);
+			fAppName = ref.name;
+		}
+		if (fAppName.IsEmpty())
+			status = B_ERROR;
 	}
 	
 	return status;

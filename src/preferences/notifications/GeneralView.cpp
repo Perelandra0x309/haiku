@@ -19,7 +19,6 @@
 #include <Catalog.h>
 #include <Directory.h>
 #include <File.h>
-#include <FindDirectory.h>
 #include <Font.h>
 #include <LayoutBuilder.h>
 #include <Node.h>
