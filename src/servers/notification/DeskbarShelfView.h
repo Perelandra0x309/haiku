@@ -10,6 +10,7 @@
 
 #include <Bitmap.h>
 #include <Deskbar.h>
+#include <Messenger.h>
 #include <PopUpMenu.h>
 #include <Rect.h>
 #include <View.h>
@@ -52,6 +53,7 @@ private:
 	void					_Quit();
 	void					_BuildMenu();
 
+	BMessenger				fServerMessenger;
 	bool					fRegistrationAcknowledged;
 	uint32					fIconState;
 	BBitmap*				fIcon;
