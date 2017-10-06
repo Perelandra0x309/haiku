@@ -132,7 +132,6 @@ DeskbarShelfView::AttachedToWindow()
 	BMessenger messenger(this);
 	BMessage registration(kDeskbarRegistration);
 	registration.AddMessenger(kKeyMessenger, messenger);
-//	status_t rc = B_ERROR;
 	fServerMessenger.SetTo("application/x-vnd.Haiku-notification_server");
 	if(fServerMessenger.IsValid())
 		fServerMessenger.SendMessage(&registration, this);
@@ -190,11 +189,8 @@ DeskbarShelfView::MessageReceived(BMessage* message)
 			break;
 		case kMuteAllClicked:
 		{
-			status_t rc = B_ERROR;
-			// TODO create single shared messenger
-			BMessenger appMessenger("application/x-vnd.Haiku-notification_server", -1, &rc);
-			if(appMessenger.IsValid())
-				appMessenger.SendMessage(kMuteAllClicked);
+			if(fServerMessenger.IsValid())
+				fServerMessenger.SendMessage(kMuteAllClicked);
 			// TODO else
 			
 			break;
