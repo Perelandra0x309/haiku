@@ -20,6 +20,7 @@ extern const char* kKeyMuteAll;
 
 //const uint32 kDeskbarReplicantClicked = 'DeCl';
 const uint32 kDeskbarRegistration = 'DeRe';
+const uint32 kRegistrationAcknowledge = 'ReAc';
 //const uint32 kShowNewIcon = 'NeIc';
 //const uint32 kShowStandardIcon = 'StIc';
 const uint32 kMuteAllClicked = 'MuCl';
@@ -51,6 +52,7 @@ private:
 	void					_Quit();
 	void					_BuildMenu();
 
+	bool					fRegistrationAcknowledged;
 	uint32					fIconState;
 	BBitmap*				fIcon;
 	BBitmap*				fNewIcon;

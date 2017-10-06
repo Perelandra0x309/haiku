@@ -28,6 +28,7 @@ const char* kKeyMuteAll = "mute_all";
 DeskbarShelfView::DeskbarShelfView()
 	:
 	BView(BRect(0, 0, 15, 15), kShelfviewName, B_FOLLOW_NONE, B_WILL_DRAW),
+	fRegistrationAcknowledged(false),
 	fIconState(ICONSTATE_DEFAULT),
 	fIcon(NULL),
 	fNewIcon(NULL),
@@ -71,11 +72,11 @@ DeskbarShelfView::DeskbarShelfView()
 		}
 	}
 
-	if (result != B_OK) {
+/*	if (result != B_OK) {
 		printf("Error creating new notification bitmap\n");
 		delete fNewIcon;
 		fNewIcon = NULL;
-	}
+	}*/
 
 }
 
@@ -83,6 +84,7 @@ DeskbarShelfView::DeskbarShelfView()
 DeskbarShelfView::DeskbarShelfView(BMessage* message)
 	:
 	BView(message),
+	fRegistrationAcknowledged(false),
 	fIconState(ICONSTATE_DEFAULT),
 	fIcon(NULL),
 	fNewIcon(NULL),
@@ -133,7 +135,7 @@ DeskbarShelfView::AttachedToWindow()
 	status_t rc = B_ERROR;
 	BMessenger appMessenger("application/x-vnd.Haiku-notification_server", -1, &rc);
 	if(appMessenger.IsValid())
-		appMessenger.SendMessage(&registration);
+		appMessenger.SendMessage(&registration, this);
 }
 
 /*
@@ -182,6 +184,10 @@ DeskbarShelfView::MessageReceived(BMessage* message)
 {
 	switch(message->what)
 	{
+		case kRegistrationAcknowledge:
+			if (message->IsReply())
+				fRegistrationAcknowledged = true;
+			break;
 		case kMuteAllClicked:
 		{
 			status_t rc = B_ERROR;

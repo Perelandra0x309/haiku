@@ -275,9 +275,11 @@ NotificationWindow::MessageReceived(BMessage* message)
 					NULL, NULL, B_WIDTH_AS_USUAL, B_WARNING_ALERT);
 				alert->SetShortcut(0, B_ESCAPE);
 				alert->Go(NULL);
+			} else {
+				BMessage reply(kRegistrationAcknowledge);
+				message->SendReply(&reply);
+				_SyncDeskbar();
 			}
-			// TODO send reply
-			_SyncDeskbar();
 			break;
 		}
 		case kMuteAllClicked:
