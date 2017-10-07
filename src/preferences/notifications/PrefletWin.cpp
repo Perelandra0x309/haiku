@@ -38,6 +38,10 @@ PrefletWin::PrefletWin()
 		B_TITLED_WINDOW, B_NOT_ZOOMABLE | B_ASYNCHRONOUS_CONTROLS
 		| B_AUTO_UPDATE_SIZE_LIMITS)
 {
+	if (find_directory(B_USER_SETTINGS_DIRECTORY, &fSettingsPath) != B_OK)
+		fSettingsPath.SetTo("/boot/home/config/settings");
+	fSettingsPath.Append(kSettingsFile);
+
 	// Preflet container view
 	fMainView = new PrefletView(this);
 	fMainView->SetBorder(B_NO_BORDER);
@@ -171,16 +175,8 @@ PrefletWin::SettingChanged(bool showExample)
 void
 PrefletWin::ReloadSettings()
 {
-	BPath path;
-
-	if (find_directory(B_USER_SETTINGS_DIRECTORY, &path) != B_OK)
-		return;
-
-	// FIXME don't load this again here, share with other tabs!
-	path.Append(kSettingsFile);
-
 	BMessage settings;
-	BFile file(path.Path(), B_READ_ONLY);
+	BFile file(fSettingsPath.Path(), B_READ_ONLY);
 	settings.Unflatten(&file);
 
 	int32 count = fMainView->CountTabs();

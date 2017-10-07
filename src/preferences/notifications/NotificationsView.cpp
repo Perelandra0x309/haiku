@@ -257,7 +257,6 @@ NotificationsView::Load(BMessage& settings)
 {
 	type_code type;
 	int32 count = 0;
-
 	if (settings.GetInfo("app_usage", &type, &count) != B_OK)
 		return B_ERROR;
 

@@ -10,6 +10,7 @@
 #include <GroupView.h>
 #include <LayoutBuilder.h>
 #include <Message.h>
+#include <Path.h>
 #include <Window.h>
 
 #include "SettingsHost.h"
@@ -40,6 +41,7 @@ private:
 			BButton*		fDefaults;
 			BButton*		fRevert;
 			BGroupLayout*	fButtonsLayout;
+			BPath			fSettingsPath;
 };
 
 #endif // _PREFLET_WIN_H

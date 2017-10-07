@@ -196,16 +196,7 @@ NotificationWindow::MessageReceived(BMessage* message)
 					reply.AddInt32("error", B_NOT_ALLOWED);
 
 				// Cache notification
-			//	BString text("Group: ");
-			//	text.Append(notification->Group()).Append("\nSig: ").Append(info.signature);
-			//	text.Append("\nMessenger valid: ").Append(messenger.IsValid()?"true":"false");
-			//	(new BAlert("sig", text, "OK"))->Go(NULL);
 				BPath path = fCachePath;
-		/*		BString group(notification->Group());
-				if (group == "")
-					path.Append("_no_group");
-				else
-					path.Append(group);*/
 				BDate currentDate(time(NULL));
 				BString dateString;
 				dateString << currentDate.Year();
