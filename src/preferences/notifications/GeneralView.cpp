@@ -63,6 +63,7 @@ GeneralView::GeneralView(SettingsHost* host)
 	int32 maxWidth = int32(kMaximumWidth / kWidthStep);
 	fWidthSlider = new BSlider("width", B_TRANSLATE("Window width:"),
 		new BMessage(kWidthChanged), minWidth, maxWidth, B_HORIZONTAL);
+	fWidthSlider->SetModificationMessage(new BMessage(kWidthChanged));
 	fWidthSlider->SetHashMarks(B_HASH_MARKS_BOTTOM);
 	fWidthSlider->SetHashMarkCount(maxWidth - minWidth + 1);
 	BString minWidthLabel;
@@ -77,6 +78,7 @@ GeneralView::GeneralView(SettingsHost* host)
 	fDurationSlider = new BSlider("duration", B_TRANSLATE("Duration:"),
 		new BMessage(kTimeoutChanged), kMinimumTimeout, kMaximumTimeout,
 		B_HORIZONTAL);
+	fDurationSlider->SetModificationMessage(new BMessage(kTimeoutChanged));
 	fDurationSlider->SetHashMarks(B_HASH_MARKS_BOTTOM);
 	fDurationSlider->SetHashMarkCount(kMaximumTimeout - kMinimumTimeout + 1);
 	BString minLabel;
@@ -130,7 +132,7 @@ GeneralView::MessageReceived(BMessage* msg)
 			break;
 		}
 		case kWidthChanged: {
-			int32 value = fWidthSlider->Value() * 50;
+			int32 value = fWidthSlider->Value() * kWidthStep;
 			_SetWidthLabel(value);
 			SettingsPane::SettingsChanged(true);
 			break;
@@ -190,7 +192,7 @@ GeneralView::Save(BMessage& settings)
 	int32 timeout = fDurationSlider->Value();
 	settings.AddInt32(kTimeoutName, timeout);
 
-	float width = fWidthSlider->Value() * 50;
+	float width = fWidthSlider->Value() * kWidthStep;
 	settings.AddFloat(kWidthName, width);
 
 	bool showDeskbar = (fShowDeskbar->Value() == B_CONTROL_ON);
@@ -209,7 +211,7 @@ GeneralView::Revert()
 	fDurationSlider->SetValue(fOriginalTimeout);
 	_SetTimeoutLabel(fOriginalTimeout);
 	
-	fWidthSlider->SetValue(fOriginalWidth / 50);
+	fWidthSlider->SetValue(fOriginalWidth / kWidthStep);
 	_SetWidthLabel(fOriginalWidth);
 
 	fShowDeskbar->SetValue(fOriginalShowDeskbar ?
@@ -226,7 +228,7 @@ GeneralView::RevertPossible()
 	if (fOriginalTimeout != timeout)
 		return true;
 	
-	int32 width = fWidthSlider->Value() * 50;
+	int32 width = fWidthSlider->Value() * kWidthStep;
 	if (fOriginalWidth != width)
 		return true;
 
@@ -244,7 +246,7 @@ GeneralView::Defaults()
 	fDurationSlider->SetValue(kDefaultTimeout);
 	_SetTimeoutLabel(kDefaultTimeout);
 
-	fWidthSlider->SetValue(kDefaultWidth / 50);
+	fWidthSlider->SetValue(kDefaultWidth / kWidthStep);
 	_SetWidthLabel(kDefaultWidth);
 
 	fShowDeskbar->SetValue(kDefaultShowDeskbar ?
@@ -261,7 +263,7 @@ GeneralView::DefaultsPossible()
 	if (kDefaultTimeout != timeout)
 		return true;
 
-	int32 width = fWidthSlider->Value() * 50;
+	int32 width = fWidthSlider->Value() * kWidthStep;
 	if (kDefaultWidth != width)
 		return true;
 
