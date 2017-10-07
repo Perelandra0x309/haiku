@@ -25,6 +25,7 @@ const uint32 kRegistrationAcknowledge = 'ReAc';
 //const uint32 kShowNewIcon = 'NeIc';
 //const uint32 kShowStandardIcon = 'StIc';
 const uint32 kMuteAllClicked = 'MuCl';
+const uint32 kShowHistory = 'ShHi';
 const uint32 kShowSettings = 'ShSe';
 const uint32 kDeskbarSync = 'DeSy';
 

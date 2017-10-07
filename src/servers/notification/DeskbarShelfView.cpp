@@ -188,9 +188,10 @@ DeskbarShelfView::MessageReceived(BMessage* message)
 				fRegistrationAcknowledged = true;
 			break;
 		case kMuteAllClicked:
+		case kShowHistory:
 		{
 			if(fServerMessenger.IsValid())
-				fServerMessenger.SendMessage(kMuteAllClicked);
+				fServerMessenger.SendMessage(message->what);
 			// TODO else
 			
 			break;
@@ -277,7 +278,7 @@ DeskbarShelfView::_BuildMenu()
 		"Deskbar menu option"), new BMessage(kMuteAllClicked)));
 	fMenu->AddSeparatorItem();
 	fMenu->AddItem(new BMenuItem(B_TRANSLATE_COMMENT("Show History"
-		B_UTF8_ELLIPSIS, "Deskbar menu option"), new BMessage('test')));
+		B_UTF8_ELLIPSIS, "Deskbar menu option"), new BMessage(kShowHistory)));
 	fMenu->AddItem(new BMenuItem(B_TRANSLATE_COMMENT("Settings"B_UTF8_ELLIPSIS,
 		"Deskbar menu option"), new BMessage(kShowSettings)));
 

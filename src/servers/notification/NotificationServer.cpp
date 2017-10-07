@@ -37,9 +37,21 @@ NotificationServer::NotificationServer(status_t& error)
 {
 }
 
-
+/*
 NotificationServer::~NotificationServer()
 {
+}*/
+
+
+bool
+NotificationServer::QuitRequested()
+{
+	if (fHistory) {
+		BMessenger messenger(fHistory);
+		if (messenger.IsValid() && messenger.LockTarget())
+			fHistory->Quit();
+	}
+	return BServer::QuitRequested();
 }
 
 
@@ -78,6 +90,10 @@ NotificationServer::MessageReceived(BMessage* message)
 			fWindow->PostMessage(message);
 			break;
 		}
+		case kShowHistory:
+			if (fHistory && fHistory->IsHidden())
+				fHistory->Show();
+			break;
 		default:
 			BApplication::MessageReceived(message);
 	}

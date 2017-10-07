@@ -34,7 +34,7 @@
 const float kEdgePadding = 5.0;
 const float kCLVTitlePadding = 8.0;
 */
-const int32 kGroupSelected = '_GSL';
+const int32 kDateSelected = '_GSL';
 const int32 kNotificationSelected = '_NSL';
 /*const int32 kNotificationInvoked = '_NIN';
 
@@ -43,9 +43,9 @@ const int32 kCLVDeleteRow = 'av02';*/
 
 HistoryWindow::HistoryWindow()
 	:
-	BWindow(BRect(0, 0, 300, 400), B_TRANSLATE_MARK("Notification History"), 
+	BWindow(BRect(0, 0, 500, 600), B_TRANSLATE_MARK("Notification History"), 
 		B_TITLED_WINDOW,
-		B_NOT_ZOOMABLE | B_NOT_MINIMIZABLE | B_AUTO_UPDATE_SIZE_LIMITS, 
+		B_NOT_ZOOMABLE | B_AUTO_UPDATE_SIZE_LIMITS | B_CLOSE_ON_ESCAPE, 
 		B_ALL_WORKSPACES)
 {
 	fMainView = new HistoryView();
@@ -55,6 +55,16 @@ HistoryWindow::HistoryWindow()
 	.End();
 	CenterOnScreen();
 	Show();
+		// TODO remove when finished testing history
+}
+
+
+bool
+HistoryWindow::QuitRequested()
+{
+	if (!IsHidden())
+		Hide();
+	return false;
 }
 
 
@@ -64,35 +74,42 @@ HistoryView::HistoryView()
 	fShowingPreview(false),
 	fCurrentPreview(NULL)
 {
-	BRect rect(0, 0, 500, 100);
+	find_directory(B_USER_CACHE_DIRECTORY, &fCachePath);
+	fCachePath.Append("Notifications");
+	
+//	BRect rect(0, 0, 500, 100);
 
 	// Search application field
 //	fSearch = new BTextControl(B_TRANSLATE("Search:"), NULL,
 //		new BMessage(kSettingChanged));
 
 	// Application menu
-	fFontSizeMenu = new BPopUpMenu("Choose a group");
-	fFontSizeMF = new BMenuField("Font Size Field", B_TRANSLATE_COMMENT("Group:", "Menu label"), fFontSizeMenu);
+	fDateSelectionMenu = new BPopUpMenu("View notifications:");
+	fDateSelectionMF = new BMenuField("Font Size Field",
+		B_TRANSLATE_COMMENT("Group:", "Menu label"), fDateSelectionMenu);
+	fDateSelectionMenu->AddItem(new BMenuItem("All",
+			new BMessage(kDateSelected)));
 	
+
 	// Application list view
-	fListView = new BListView(rect, "Notification List View", B_SINGLE_SELECTION_LIST,
-								B_FOLLOW_ALL_SIDES);
-	fScrollView = new BScrollView("List Scroll View", fListView, B_FOLLOW_ALL_SIDES, 0,
-								false, true);
-	
+	fListView = new BListView(BRect(0, 0, 500, 100), "Notification List View",
+		B_SINGLE_SELECTION_LIST, B_FOLLOW_ALL_SIDES);
+	fScrollView = new BScrollView("List Scroll View", fListView,
+		B_FOLLOW_ALL_SIDES, 0, false, true);
+
 	// Preview view
 	fGroupView = new AppGroupView(BMessenger(this), "");
 	fGroupView->SetPreviewModeOn(true);
 	BBox *box = new BBox("preview");
-	box->SetLabel(B_TRANSLATE("Notification Preview"));
+	box->SetLabel(B_TRANSLATE("Notification View"));
 	BGroupLayout *boxLayout = BLayoutBuilder::Group<>(B_HORIZONTAL)
     	.SetInsets(0, B_USE_DEFAULT_SPACING, 0, 0).Add(fGroupView);
     box->AddChild(boxLayout->View());
-							
+
 	// Add views
 	BLayoutBuilder::Group<>(this, B_VERTICAL)
 		.AddGroup(B_HORIZONTAL)
-			.Add(fFontSizeMF)
+			.Add(fDateSelectionMF)
 			.AddGlue()
 		.End()
 		.Add(fScrollView)
@@ -126,7 +143,9 @@ HistoryView::AttachedToWindow()
 		B_ANY_SOURCE, B_KEY_DOWN, CatchDelete));
 #endif
 
-	_PopulateGroups();
+//	_PopulateGroups();
+
+	fDateSelectionMenu->SetTargetForItems(this);
 }
 
 
@@ -142,19 +161,20 @@ void
 HistoryView::MessageReceived(BMessage* message)
 {
 	switch (message->what) {
-		case kGroupSelected:
+		case kDateSelected:
 		{
 			_UpdatePreview(NULL, NULL);
-			BMenuItem* item = fFontSizeMenu->FindMarked();
-			if (item != NULL)
-				_PopulateNotifications(item->Label());
+		//	BMenuItem* item = fDateSelectionMenu->FindMarked();
+		//	if (item != NULL)
+				_PopulateNotifications();
 
 			break;
 		}
 		case kNotificationSelected: {
 			int32 selectedIndex = fListView->CurrentSelection();
 			if(selectedIndex >= 0) {
-				HistoryListItem *selectedItem = (HistoryListItem*)(fListView->ItemAt(selectedIndex));
+				HistoryListItem *selectedItem =
+					(HistoryListItem*)(fListView->ItemAt(selectedIndex));
 				if (selectedItem->IsDateDivider())
 					break;
 				BMessage data = selectedItem->GetMessage();
@@ -174,7 +194,7 @@ HistoryView::MessageReceived(BMessage* message)
 	}
 }
 
-
+/*
 void
 HistoryView::_PopulateGroups()
 {
@@ -197,17 +217,17 @@ HistoryView::_PopulateGroups()
 		if (!_ArchiveIsValid(archive, count))
 			continue;
 		
-		fFontSizeMenu->AddItem(new BMenuItem(entry.name,
+		fDateSelectionMenu->AddItem(new BMenuItem(entry.name,
 			new BMessage(kGroupSelected)));
 	}
-	fFontSizeMenu->SetTargetForItems(this);
+	fDateSelectionMenu->SetTargetForItems(this);
 }
-
+*/
 
 void
-HistoryView::_PopulateNotifications(const char* group)
+HistoryView::_PopulateNotifications()
 {
-	while(!fListView->IsEmpty())
+	while (!fListView->IsEmpty())
 	{
 		BListItem *item = fListView->RemoveItem(int32(0));
 		delete item;
@@ -217,45 +237,49 @@ HistoryView::_PopulateNotifications(const char* group)
 	HistoryListItem* testitem = new HistoryListItem("Yesterday");
 	fListView->AddItem(testitem);
 	
-	// Get archive from file based on group
-	BPath archivePath;
-	find_directory(B_USER_CACHE_DIRECTORY, &archivePath);
-	archivePath.Append("Notifications");
-	archivePath.Append(group);
-	BFile archiveFile(archivePath.Path(), B_READ_ONLY);
-	BMessage archive;
-	archive.Unflatten(&archiveFile);
-	archiveFile.Unset();
-	
-	// Check if message archive is valid
-	int32 count;
-	if (!_ArchiveIsValid(archive, count))
-		return;
-	
-	int32 index;
-	HistoryListItem* selectItem = NULL;
-	for (index = 0; index < count; index++) {
-		BMessage notificationData;
-		status_t result = archive.FindMessage(kNameNotificationData, index, &notificationData);
-		if (result != B_OK)
+	BDirectory cacheDir(fCachePath.Path());
+	cacheDir.Rewind();
+	BEntry entry;
+	while (cacheDir.GetNextEntry(&entry) != B_ENTRY_NOT_FOUND) {
+		if (entry.InitCheck() != B_OK || !entry.IsFile())
 			continue;
-		HistoryListItem* item = new HistoryListItem(notificationData);
-		fListView->AddItem(item);
 		
-		if (index == 0) {
-			selectItem = item;
-		//	fListView->Select(fListView->IndexOf(item));
-		//	fListView->ScrollToSelection();
-		}
+		BFile archiveFile(&entry, B_READ_ONLY);
+		BMessage archive;
+		archive.Unflatten(&archiveFile);
+		archiveFile.Unset();
 		
-		// Todo testing
-		if (index == 2) {
-			HistoryListItem* testitem = new HistoryListItem("Today");
-			fListView->AddItem(testitem);
+		// Check if message archive is valid
+		int32 count;
+		if (!_ArchiveIsValid(archive, count))
+			return;
+		
+		int32 index;
+	//	HistoryListItem* selectItem = NULL;
+		for (index = 0; index < count; index++) {
+			BMessage notificationData;
+			status_t result = archive.FindMessage(kNameNotificationData, index,
+				&notificationData);
+			if (result != B_OK)
+				continue;
+			HistoryListItem* item = new HistoryListItem(notificationData);
+			fListView->AddItem(item);
+			
+	//		if (index == 0) {
+	//			selectItem = item;
+			//	fListView->Select(fListView->IndexOf(item));
+			//	fListView->ScrollToSelection();
+	//		}
+			
+			// TODO testing
+			if (index == 2) {
+				HistoryListItem* testitem = new HistoryListItem("Today");
+				fListView->AddItem(testitem);
+			}
 		}
 	}
-	if (selectItem)
-		fListView->Select(fListView->IndexOf(selectItem));
+//	if (selectItem)
+//		fListView->Select(fListView->IndexOf(selectItem));
 }
 
 

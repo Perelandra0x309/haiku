@@ -16,8 +16,9 @@ class HistoryWindow;
 class NotificationServer : public BServer {
 public:
 								NotificationServer(status_t& error);
-	virtual						~NotificationServer();
+//	virtual						~NotificationServer();
 
+	virtual bool				QuitRequested();
 	virtual	void				ReadyToRun();
 	virtual	void				MessageReceived(BMessage* message);
 

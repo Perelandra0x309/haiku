@@ -9,6 +9,7 @@
 
 #include <ListView.h>
 #include <MenuField.h>
+#include <Path.h>
 #include <PopUpMenu.h>
 #include <ScrollView.h>
 #include <View.h>
@@ -34,18 +35,19 @@ public:
 	virtual	void				MessageReceived(BMessage* message);
 
 private:
-			void				_PopulateGroups();
-			void				_PopulateNotifications(const char* group);
+//			void				_PopulateGroups();
+			void				_PopulateNotifications();
 			bool				_ArchiveIsValid(BMessage& archive, int32& count);
 			void				_UpdatePreview(NotificationView* view,
 									const char* group);
 
+			BPath				fCachePath;
 			bool				fShowingPreview;
 //			appusage_t			fAppFilters;
 			BCheckBox*			fBlockAll;
 //			BTextControl*		fSearch;
-			BPopUpMenu*			fFontSizeMenu;
-			BMenuField*			fFontSizeMF;
+			BPopUpMenu*			fDateSelectionMenu;
+			BMenuField*			fDateSelectionMF;
 			AppGroupView*		fGroupView;
 			BListView*			fListView;
 			BScrollView*		fScrollView;
@@ -55,6 +57,7 @@ private:
 class HistoryWindow : public BWindow {
 public:
 								HistoryWindow();
+	virtual bool				QuitRequested();
 private:
 			HistoryView*		fMainView;
 };
