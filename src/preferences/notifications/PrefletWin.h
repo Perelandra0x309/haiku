@@ -8,7 +8,6 @@
 
 
 #include <GroupView.h>
-#include <LayoutBuilder.h>
 #include <Message.h>
 #include <Path.h>
 #include <Window.h>

@@ -18,6 +18,7 @@
 #include <Roster.h>
 
 #include "DeskbarShelfView.h"
+#include "HistoryWindow.h"
 #include "NotificationWindow.h"
 
 
@@ -46,6 +47,7 @@ void
 NotificationServer::ReadyToRun()
 {
 	fWindow = new NotificationWindow();
+	fHistory = new HistoryWindow();
 }
 
 

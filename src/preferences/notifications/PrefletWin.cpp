@@ -15,6 +15,7 @@
 #include <Button.h>
 #include <Catalog.h>
 #include <FindDirectory.h>
+#include <LayoutBuilder.h>
 #include <Notification.h>
 #include <Path.h>
 #include <SeparatorView.h>

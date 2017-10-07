@@ -15,7 +15,7 @@
 #include <Message.h>
 
 #include <AppUsage.h>
-#include <NotificationReceived.h>
+//#include <NotificationReceived.h>
 
 const type_code kTypeCode = 'ipau';
 

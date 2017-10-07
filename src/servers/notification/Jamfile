@@ -8,6 +8,8 @@ Server notification_server :
 	NotificationView.cpp
 	NotificationWindow.cpp
 	DeskbarShelfView.cpp
+	HistoryWindow.cpp
+	HistoryListItem.cpp
 	: be translation [ TargetLibstdc++ ] libnotification.a localestub
 	: notification_server.rdef
 ;
@@ -18,12 +20,12 @@ DoCatalogs notification_server :
 	NotificationServer.cpp
 	NotificationView.cpp
 	NotificationWindow.cpp
+	HistoryWindow.cpp
 ;
 
 # Stuff shared with the preflet
 StaticLibrary libnotification.a :
 	AppUsage.cpp
-	NotificationReceived.cpp
 	Notifications.cpp
 ;
 

@@ -10,6 +10,7 @@
 
 
 class NotificationWindow;
+class HistoryWindow;
 
 
 class NotificationServer : public BServer {
@@ -27,6 +28,7 @@ public:
 
 private:
 			NotificationWindow*	fWindow;
+			HistoryWindow*		fHistory;
 };
 
 
