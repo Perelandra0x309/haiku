@@ -96,6 +96,16 @@ HistoryView::HistoryView()
 		B_TRANSLATE_COMMENT("View notifications:", "Menu label"), fDateSelectionMenu);
 	fDateSelectionMenu->AddItem(new BMenuItem("All",
 			new BMessage(kDateSelected)));
+	fDateSelectionMenu->AddItem(new BMenuItem("From today",
+			new BMessage(kDateSelected)));
+	fDateSelectionMenu->AddItem(new BMenuItem("Since yesterday",
+			new BMessage(kDateSelected)));
+	fDateSelectionMenu->AddItem(new BMenuItem("From the last 7 days",
+			new BMessage(kDateSelected)));
+	fDateSelectionMenu->AddItem(new BMenuItem("From the last 31 days",
+			new BMessage(kDateSelected)));
+	fDateSelectionMenu->AddItem(new BMenuItem("From the last year",
+			new BMessage(kDateSelected)));
 	
 
 	// Application list view

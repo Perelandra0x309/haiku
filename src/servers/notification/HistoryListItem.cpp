@@ -12,6 +12,8 @@
 #include <TimeFormat.h>
 #include <notification/Notifications.h>
 
+static const float kTintedLineTint = 1.04;
+
 
 HistoryListItem::HistoryListItem(BMessage& notificationData)
 	:
@@ -65,7 +67,7 @@ HistoryListItem::HistoryListItem(int32 timestamp)
 		} else {
 			BDateFormat formatter;
 			status_t result = formatter.Format(fDateLabel, fTimestamp,
-				B_MEDIUM_DATE_FORMAT);
+				B_LONG_DATE_FORMAT);
 			// TODO testing
 		/*	BString time;
 			BTimeFormat timeFormatter;
@@ -96,27 +98,39 @@ HistoryListItem::DrawItem(BView *owner, BRect item_rect, bool complete)
 	
 	if (fIsDateDivider) {
 		// Draw date header
-		owner->SetHighColor(ui_color(B_LIST_BACKGROUND_COLOR));
-		owner->SetLowColor(ui_color(B_LIST_BACKGROUND_COLOR));
+		rgb_color headerBackground =
+			tint_color(ui_color(B_LIST_SELECTED_BACKGROUND_COLOR), 0.7);
+		owner->SetHighColor(headerBackground);
+		owner->SetLowColor(headerBackground);
 		owner->FillRect(item_rect);
 		
 		// Round rectangle
-		owner->SetHighColor(ui_color(B_LIST_SELECTED_BACKGROUND_COLOR));
+/*		owner->SetHighColor(ui_color(B_LIST_SELECTED_BACKGROUND_COLOR));
 		owner->SetLowColor(ui_color(B_LIST_SELECTED_BACKGROUND_COLOR));
 		float xyRadius = (Height() - 2) / 2.0;
 		float stringWidth = be_plain_font->StringWidth(fDateLabel);
 		float listWidth;
 		owner->GetPreferredSize(&listWidth, NULL);
 		BRect roundRect(item_rect);
-		roundRect.InsetBy((listWidth - stringWidth - (2 * xyRadius) ) / 2.0, 1);
-		owner->FillRoundRect(roundRect, xyRadius, xyRadius);
-		owner->StrokeLine(item_rect.LeftTop(), item_rect.RightTop());
-		owner->StrokeLine(item_rect.LeftBottom(), item_rect.RightBottom());
+		float insetX = (listWidth - stringWidth - (2 * xyRadius) ) / 2.0;
+		roundRect.InsetBy(insetX, 1);
+		owner->FillRoundRect(roundRect, xyRadius, xyRadius);*/
+//		owner->StrokeLine(item_rect.LeftTop(), item_rect.RightTop());
+//		owner->StrokeLine(item_rect.LeftBottom(), item_rect.RightBottom());
 		
 		// Date text
+		BFont ownerFont;
+		owner->GetFont(&ownerFont);
+		ownerFont.SetFace(B_BOLD_FACE);
+		owner->SetFont(&ownerFont, B_FONT_FACE);
 		owner->SetHighColor(ui_color(B_LIST_SELECTED_ITEM_TEXT_COLOR));
-		owner->MovePenTo(roundRect.left + xyRadius + 1,
-			roundRect.top + offset_height - 1);
+//		owner->MovePenTo(roundRect.left + xyRadius + 1,
+//			roundRect.top + offset_height - 1);
+		float stringWidth = owner->StringWidth(fDateLabel);
+		float listWidth;
+		owner->GetPreferredSize(&listWidth, NULL);
+		float insetX = (listWidth - stringWidth) / 2.0;
+		owner->MovePenTo(item_rect.left + insetX, item_rect.top + offset_height - 1);
 		owner->DrawString(fDateLabel);
 	} else {
 		// Draw notification list item
@@ -124,8 +138,17 @@ HistoryListItem::DrawItem(BView *owner, BRect item_rect, bool complete)
 		rgb_color backgroundColor;
 		if(IsSelected())
 			backgroundColor = ui_color(B_LIST_SELECTED_BACKGROUND_COLOR);
-		else
+		else {
 			backgroundColor = ui_color(B_LIST_BACKGROUND_COLOR);
+			BListView* listView = dynamic_cast<BListView*>(owner);
+			if(listView) {
+				int32 index = listView->IndexOf(this);
+				// Alternate tinted background
+				if ( (index % 2) == 1)
+					backgroundColor = tint_color(backgroundColor,
+						kTintedLineTint);
+			}
+		}
 		owner->SetHighColor(backgroundColor);
 		owner->SetLowColor(backgroundColor);
 		owner->FillRect(item_rect);
@@ -137,24 +160,22 @@ HistoryListItem::DrawItem(BView *owner, BRect item_rect, bool complete)
 		// Time
 		BString timeString;
 		BTimeFormat timeFormatter;
-		timeFormatter.Format(timeString, fTimestamp, B_MEDIUM_TIME_FORMAT);
-		timeString.Append("  ");
-		
-		// Testing- date
-/*		BDateFormat formatter;
-		BString dateString;
-		formatter.Format(dateString, fTimestamp, B_MEDIUM_DATE_FORMAT);
-		timeString.Append(dateString).Append("  ");*/
+		timeFormatter.Format(timeString, fTimestamp, B_SHORT_TIME_FORMAT);
+		timeString.Append("    ");
 		
 		BPoint cursor(item_rect.left, item_rect.top + offset_height /*+ kTextMargin*/);
 		if (timeString.FindFirst(":") == 1)
 			cursor.x += owner->StringWidth("1");
+			// Indent times with a single digit hour
 		if(IsSelected())
 			owner->SetHighColor(tint_color(ui_color(B_LIST_SELECTED_ITEM_TEXT_COLOR), 0.7));
 		else
 			owner->SetHighColor(tint_color(ui_color(B_LIST_ITEM_TEXT_COLOR), 0.7));
 		owner->MovePenTo(cursor.x, cursor.y);
 		owner->DrawString(timeString);
+		
+		// Status icon
+		
 		
 		// Group
 		if(IsSelected())
