@@ -15,7 +15,7 @@ class HistoryListItem : public BListItem
 {
 public:
 							HistoryListItem(BMessage& notificationData);
-							HistoryListItem(char* label);
+							HistoryListItem(int32 timestamp);
 //							~HistoryListItem();
 	virtual void			DrawItem(BView *owner, BRect item_rect,
 								bool complete = false);
@@ -24,6 +24,7 @@ public:
 			status_t		InitStatus() { return fInitStatus; }
 			BMessage		GetMessage() { return fNotificationMessage; }
 			bool			IsDateDivider() { return fIsDateDivider; }
+			const char*		DateLabel();
 
 private:
 	status_t				fInitStatus;

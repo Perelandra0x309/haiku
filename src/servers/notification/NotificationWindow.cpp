@@ -196,8 +196,8 @@ NotificationWindow::MessageReceived(BMessage* message)
 					reply.AddInt32("error", B_NOT_ALLOWED);
 
 				// Cache notification
-				BPath path = fCachePath;
-				BDate currentDate(time(NULL));
+				time_t currentTime = time(NULL);
+				BDate currentDate(currentTime);
 				BString dateString;
 				dateString << currentDate.Year();
 				int32 month = currentDate.Month();
@@ -209,15 +209,23 @@ NotificationWindow::MessageReceived(BMessage* message)
 					dateString.Append("0");
 				dateString << day;
 		//		printf("Date: %s\n", dateString.String());
+				BPath path = fCachePath;
 				path.Append(dateString.String());
 				BMessage archive(kNotificationsArchive);
 				BFile file(path.Path(), B_READ_ONLY | B_CREATE_FILE);
 				archive.Unflatten(&file);
 				file.Unset();
+				// Add timestamp to cache massage for first notification
+				type_code type;
+				int32 count = 0;
+				archive.GetInfo(kNameNotificationData, &type, &count);
+				if (count == 0)
+					archive.AddInt32(kNameTimestamp, currentTime);
+				// Add notificatio data
 				BMessage notificationData(kNotificationData);
 				notificationData.AddMessage(kNameNotificationMessage, message);
 				notificationData.AddBool(kNameWasAllowed, allow);
-				notificationData.AddInt32(kNameTimestamp, time(NULL));
+				notificationData.AddInt32(kNameTimestamp, currentTime);
 				archive.AddMessage(kNameNotificationData, &notificationData);
 				file.SetTo(path.Path(), B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE);
 				archive.Flatten(&file);

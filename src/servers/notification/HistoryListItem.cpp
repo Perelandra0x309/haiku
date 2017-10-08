@@ -7,6 +7,9 @@
  */
 #include "HistoryListItem.h"
 
+#include <DateFormat.h>
+#include <DateTime.h>
+#include <TimeFormat.h>
 #include <notification/Notifications.h>
 
 
@@ -36,15 +39,32 @@ HistoryListItem::HistoryListItem(BMessage& notificationData)
 }
 
 
-HistoryListItem::HistoryListItem(char* label)
+HistoryListItem::HistoryListItem(int32 timestamp)
 	:
 	BListItem(),
 	fInitStatus(B_ERROR),
-	fIsDateDivider(true),
-	fDateLabel(label)
+	fIsDateDivider(true)
 {
+	// Convert timestamp to midnight local
+//	fTimestamp = timestamp;
+	BTime midnight(0, 0, 0);
+	BDate date(timestamp);
+	BDateTime midnightDate(date, midnight);
+	fTimestamp = midnightDate.Time_t();
 	
-	fInitStatus = B_OK;
+	BDateFormat formatter;
+	BString dateString;
+	status_t result = formatter.Format(fDateLabel, fTimestamp,
+		B_MEDIUM_DATE_FORMAT);
+	// TODO testing
+/*	BString time;
+	BTimeFormat timeFormatter;
+	timeFormatter.Format(time, fTimestamp,
+		B_LONG_TIME_FORMAT);
+	fDateLabel.Append(" ").Append(time);*/
+	
+	if (result == B_OK)
+		fInitStatus = B_OK;
 }
 
 
@@ -118,6 +138,10 @@ HistoryListItem::DrawItem(BView *owner, BRect item_rect, bool complete)
 		timeString << fTimestamp;
 		timeString.Append(": ");
 		owner->DrawString(timeString);
+		/*BString time;
+	BTimeFormat timeFormatter;
+	timeFormatter.Format(time, timestamp,
+		B_LONG_TIME_FORMAT);*/
 		
 		if (fTitle.Length() > 0) {
 			owner->PushState();
@@ -157,4 +181,14 @@ HistoryListItem::TimestampCompare(HistoryListItem* item)
 	else if (fTimestamp > item->fTimestamp)
 		return 1;
 	return 0;
+}
+
+
+const char*
+HistoryListItem::DateLabel()
+{
+	if (!fIsDateDivider)
+		return NULL;
+	else
+		return fDateLabel.String();
 }

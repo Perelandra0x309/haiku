@@ -20,6 +20,7 @@
 #include <LayoutBuilder.h>
 #include <Notification.h>
 #include <Path.h>
+#include <StringList.h>
 #include <TextControl.h>
 #include <Window.h>
 
@@ -239,31 +240,41 @@ HistoryView::_PopulateNotifications()
 		BListItem *item = fListView->RemoveItem(int32(0));
 		delete item;
 	}
-	
+
 	// TODO test date list item
-	HistoryListItem* testitem = new HistoryListItem("Yesterday");
-	fListView->AddItem(testitem);
-	
+//	HistoryListItem* testitem = new HistoryListItem("Yesterday");
+//	fListView->AddItem(testitem);
+
 	BDirectory cacheDir(fCachePath.Path());
 	cacheDir.Rewind();
 	BEntry entry;
+	BStringList dateItemsList;
 	while (cacheDir.GetNextEntry(&entry) != B_ENTRY_NOT_FOUND) {
 		if (entry.InitCheck() != B_OK || !entry.IsFile())
 			continue;
-		
+
 		BFile archiveFile(&entry, B_READ_ONLY);
 		BMessage archive;
 		archive.Unflatten(&archiveFile);
 		archiveFile.Unset();
-		
+
 		// Check if message archive is valid
 		int32 count;
 		if (!_ArchiveIsValid(archive, count))
 			return;
-		
+
+		// Get cache file date
+		int32 timestamp = 0;
+		bool foundTimestamp = false;
+		status_t result = archive.FindInt32(kNameTimestamp, &timestamp);
+		if (result == B_OK)
+			foundTimestamp = true;
+
+		// Get notifications
 		int32 index;
 	//	HistoryListItem* selectItem = NULL;
 		for (index = 0; index < count; index++) {
+			// Get notification
 			BMessage notificationData;
 			status_t result = archive.FindMessage(kNameNotificationData, index,
 				&notificationData);
@@ -272,6 +283,12 @@ HistoryView::_PopulateNotifications()
 			HistoryListItem* item = new HistoryListItem(notificationData);
 			fListView->AddItem(item);
 			
+			// Get timestamp from first notification
+			if (index == 0 && !foundTimestamp) {
+				if (notificationData.FindInt32(kNameTimestamp, &timestamp) == B_OK)
+					foundTimestamp = true;
+			}
+			
 	//		if (index == 0) {
 	//			selectItem = item;
 			//	fListView->Select(fListView->IndexOf(item));
@@ -279,10 +296,27 @@ HistoryView::_PopulateNotifications()
 	//		}
 			
 			// TODO testing
-			if (index == 2) {
+/*			if (index == 2) {
 				HistoryListItem* testitem = new HistoryListItem("Today");
 				fListView->AddItem(testitem);
+			}*/
+		}
+		// Create date list item
+		if (foundTimestamp) {
+			HistoryListItem* dateItem = new HistoryListItem(timestamp);
+			if (dateItem->InitStatus() == B_OK) {
+				// Prevent duplicates
+				const char* itemLabel = dateItem->DateLabel();
+				if (itemLabel != NULL) {
+					BString labelString(itemLabel);
+					if (!dateItemsList.HasString(itemLabel)) {
+						fListView->AddItem(dateItem);
+						dateItemsList.Add(itemLabel);
+					}
+				}
 			}
+			else
+				delete dateItem;
 		}
 	}
 	fListView->SortItems(CompareListItems);
