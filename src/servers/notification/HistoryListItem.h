@@ -20,6 +20,7 @@ public:
 	virtual void			DrawItem(BView *owner, BRect item_rect,
 								bool complete = false);
 	virtual void			Update(BView *owner, const BFont *font);
+			int				TimestampCompare(HistoryListItem* item);
 			status_t		InitStatus() { return fInitStatus; }
 			BMessage		GetMessage() { return fNotificationMessage; }
 			bool			IsDateDivider() { return fIsDateDivider; }

@@ -41,6 +41,15 @@ const int32 kNotificationSelected = '_NSL';
 const int32 kCLVDeleteRow = 'av02';*/
 
 
+static int
+CompareListItems(const void* item1, const void* item2)
+{
+	HistoryListItem* first = *(HistoryListItem**)item1;
+	HistoryListItem* second = *(HistoryListItem**)item2;
+	return first->TimestampCompare(second);
+}
+
+
 HistoryWindow::HistoryWindow()
 	:
 	BWindow(BRect(0, 0, 500, 600), B_TRANSLATE_MARK("Notification History"), 
@@ -50,7 +59,6 @@ HistoryWindow::HistoryWindow()
 {
 	fMainView = new HistoryView();
 	BLayoutBuilder::Group<>(this, B_VERTICAL, 0)
-//		.SetInsets(0, B_USE_DEFAULT_SPACING, 0, 0)
 		.Add(fMainView)
 	.End();
 	CenterOnScreen();
@@ -114,8 +122,7 @@ HistoryView::HistoryView()
 		.End()
 		.Add(fScrollView)
 		.Add(box)
-		.SetInsets(B_USE_WINDOW_SPACING, B_USE_WINDOW_SPACING,
-			B_USE_WINDOW_SPACING, B_USE_DEFAULT_SPACING)
+		.SetInsets(B_USE_WINDOW_SPACING)
 	.End();
 }
 
@@ -278,6 +285,8 @@ HistoryView::_PopulateNotifications()
 			}
 		}
 	}
+	fListView->SortItems(CompareListItems);
+	
 //	if (selectItem)
 //		fListView->Select(fListView->IndexOf(selectItem));
 }

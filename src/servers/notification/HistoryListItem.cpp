@@ -81,7 +81,8 @@ HistoryListItem::DrawItem(BView *owner, BRect item_rect, bool complete)
 		
 		// Text
 		owner->SetHighColor(ui_color(B_LIST_SELECTED_ITEM_TEXT_COLOR));
-		owner->MovePenTo(roundRect.left + xyRadius + 1, roundRect.top + offset_height - 1);
+		owner->MovePenTo(roundRect.left + xyRadius + 1,
+			roundRect.top + offset_height - 1);
 		owner->DrawString(fDateLabel);
 	}
 	else {
@@ -113,6 +114,11 @@ HistoryListItem::DrawItem(BView *owner, BRect item_rect, bool complete)
 			owner->SetHighColor(ui_color(B_LIST_ITEM_TEXT_COLOR));
 		owner->MovePenTo(cursor.x, cursor.y);
 		
+		BString timeString;
+		timeString << fTimestamp;
+		timeString.Append(": ");
+		owner->DrawString(timeString);
+		
 		if (fTitle.Length() > 0) {
 			owner->PushState();
 			BFont ownerFont;
@@ -140,4 +146,15 @@ HistoryListItem::Update(BView *owner, const BFont *font)
 	font->GetHeight(&fontHeight);
 	fFontHeight = fontHeight.ascent + fontHeight.descent + fontHeight.leading;
 	fFontAscent = fontHeight.ascent;
+}
+
+
+int
+HistoryListItem::TimestampCompare(HistoryListItem* item)
+{
+	if (fTimestamp < item->fTimestamp)
+		return -1;
+	else if (fTimestamp > item->fTimestamp)
+		return 1;
+	return 0;
 }
