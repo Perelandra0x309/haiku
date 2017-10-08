@@ -15,6 +15,7 @@
 #include <Box.h>
 #include <Catalog.h>
 #include <CheckBox.h>
+#include <DateFormat.h>
 #include <Directory.h>
 #include <FindDirectory.h>
 #include <LayoutBuilder.h>
@@ -25,7 +26,6 @@
 #include <Window.h>
 
 #include <notification/Notifications.h>
-//#include <notification/NotificationReceived.h>
 
 #include "HistoryListItem.h"
 
@@ -233,15 +233,10 @@ HistoryView::_PopulateGroups()
 void
 HistoryView::_PopulateNotifications()
 {
-	while (!fListView->IsEmpty())
-	{
+	while (!fListView->IsEmpty()) {
 		BListItem *item = fListView->RemoveItem(int32(0));
 		delete item;
 	}
-
-	// TODO test date list item
-//	HistoryListItem* testitem = new HistoryListItem("Yesterday");
-//	fListView->AddItem(testitem);
 
 	BDirectory cacheDir(fCachePath.Path());
 	cacheDir.Rewind();
@@ -268,9 +263,7 @@ HistoryView::_PopulateNotifications()
 		if (result == B_OK)
 			foundTimestamp = true;
 
-		// Get notifications
 		int32 index;
-	//	HistoryListItem* selectItem = NULL;
 		for (index = 0; index < count; index++) {
 			// Get notification
 			BMessage notificationData;
@@ -281,23 +274,20 @@ HistoryView::_PopulateNotifications()
 			HistoryListItem* item = new HistoryListItem(notificationData);
 			fListView->AddItem(item);
 			
-			// Get timestamp from first notification
-			if (index == 0 && !foundTimestamp) {
-				if (notificationData.FindInt32(kNameTimestamp, &timestamp) == B_OK)
-					foundTimestamp = true;
+			// Get timestamp from notification
+			if (/*index == 0 && */!foundTimestamp) {
+				if (notificationData.FindInt32(kNameTimestamp, &timestamp) == B_OK) {
+					//foundTimestamp = true;
+					BString dateLabel;
+					BDateFormat formatter;
+					formatter.Format(dateLabel, timestamp, B_MEDIUM_DATE_FORMAT);
+					if (!dateItemsList.HasString(dateLabel)) {
+						HistoryListItem* dateItem = new HistoryListItem(timestamp);
+						fListView->AddItem(dateItem);
+						dateItemsList.Add(dateLabel);
+					}
+				}
 			}
-			
-	//		if (index == 0) {
-	//			selectItem = item;
-			//	fListView->Select(fListView->IndexOf(item));
-			//	fListView->ScrollToSelection();
-	//		}
-			
-			// TODO testing
-/*			if (index == 2) {
-				HistoryListItem* testitem = new HistoryListItem("Today");
-				fListView->AddItem(testitem);
-			}*/
 		}
 		// Create date list item
 		if (foundTimestamp) {
@@ -312,8 +302,7 @@ HistoryView::_PopulateNotifications()
 						dateItemsList.Add(itemLabel);
 					}
 				}
-			}
-			else
+			} else
 				delete dateItem;
 		}
 	}
