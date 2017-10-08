@@ -52,19 +52,32 @@ HistoryListItem::HistoryListItem(int32 timestamp)
 	BDateTime midnightDate(date, midnight);
 	fTimestamp = midnightDate.Time_t();
 	
-	BDateFormat formatter;
-	BString dateString;
-	status_t result = formatter.Format(fDateLabel, fTimestamp,
-		B_MEDIUM_DATE_FORMAT);
-	// TODO testing
-/*	BString time;
-	BTimeFormat timeFormatter;
-	timeFormatter.Format(time, fTimestamp,
-		B_LONG_TIME_FORMAT);
-	fDateLabel.Append(" ").Append(time);*/
-	
-	if (result == B_OK)
+	// Create the label
+	BDate referenceDate(time(NULL));
+	if (date == referenceDate) {
+		fDateLabel.SetTo("Today");
 		fInitStatus = B_OK;
+	} else {
+		referenceDate.AddDays(-1);
+		if (date == referenceDate) {
+			fDateLabel.SetTo("Yesterday");
+			fInitStatus = B_OK;
+		} else {
+			BDateFormat formatter;
+			BString dateString;
+			status_t result = formatter.Format(fDateLabel, fTimestamp,
+				B_MEDIUM_DATE_FORMAT);
+			// TODO testing
+		/*	BString time;
+			BTimeFormat timeFormatter;
+			timeFormatter.Format(time, fTimestamp,
+				B_LONG_TIME_FORMAT);
+			fDateLabel.Append(" ").Append(time);*/
+			
+			if (result == B_OK)
+				fInitStatus = B_OK;
+		}
+	}
 }
 
 
