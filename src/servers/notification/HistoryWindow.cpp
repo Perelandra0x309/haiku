@@ -86,16 +86,14 @@ HistoryView::HistoryView()
 	find_directory(B_USER_CACHE_DIRECTORY, &fCachePath);
 	fCachePath.Append("Notifications");
 	
-//	BRect rect(0, 0, 500, 100);
-
 	// Search application field
 //	fSearch = new BTextControl(B_TRANSLATE("Search:"), NULL,
 //		new BMessage(kSettingChanged));
 
 	// Application menu
-	fDateSelectionMenu = new BPopUpMenu("View notifications:");
+	fDateSelectionMenu = new BPopUpMenu("notifications");
 	fDateSelectionMF = new BMenuField("Font Size Field",
-		B_TRANSLATE_COMMENT("Group:", "Menu label"), fDateSelectionMenu);
+		B_TRANSLATE_COMMENT("View notifications:", "Menu label"), fDateSelectionMenu);
 	fDateSelectionMenu->AddItem(new BMenuItem("All",
 			new BMessage(kDateSelected)));
 	

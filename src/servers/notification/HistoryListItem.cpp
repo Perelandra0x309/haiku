@@ -24,6 +24,7 @@ HistoryListItem::HistoryListItem(BMessage& notificationData)
 		return;
 	BNotification notification(&fNotificationMessage);
 	fType = notification.Type();
+	fGroup = notification.Group();
 	fTitle = notification.Title();
 	fContent = notification.Content();
 	
@@ -147,29 +148,35 @@ HistoryListItem::DrawItem(BView *owner, BRect item_rect, bool complete)
 			owner->SetHighColor(ui_color(B_LIST_ITEM_TEXT_COLOR));
 		owner->MovePenTo(cursor.x, cursor.y);
 		
+		// Time
 		BString timeString;
-		timeString << fTimestamp;
-		timeString.Append(": ");
+		BTimeFormat timeFormatter;
+		timeFormatter.Format(timeString, fTimestamp, B_MEDIUM_TIME_FORMAT);
+		timeString.Append("  ");
 		owner->DrawString(timeString);
-		/*BString time;
-	BTimeFormat timeFormatter;
-	timeFormatter.Format(time, timestamp,
-		B_LONG_TIME_FORMAT);*/
 		
-		if (fTitle.Length() > 0) {
+		// Group
+		if (fGroup.Length() > 0) {
 			owner->PushState();
 			BFont ownerFont;
 			owner->GetFont(&ownerFont);
 			ownerFont.SetFace(B_BOLD_FACE);
 			owner->SetFont(&ownerFont, B_FONT_FACE);
-			BString text(fTitle);
+			BString text(fGroup);
 			text.Append(": ");
 			owner->DrawString(text);
 			float stringWidth = owner->StringWidth(text);
 			owner->PopState();
 			owner->MovePenBy(stringWidth, 0);
 		}
-		owner->DrawString(fContent);
+		
+		// Content
+		if (fTitle.Length() > 0) {
+			BString contentText(fTitle);
+			contentText.Append(": ").Append(fContent);
+			owner->DrawString(contentText);
+		} else
+			owner->DrawString(fContent);
 	}
 	owner->PopState();
 }

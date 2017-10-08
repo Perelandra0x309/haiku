@@ -30,6 +30,7 @@ private:
 	status_t				fInitStatus;
 	BMessage				fNotificationMessage;
 	notification_type		fType;
+	BString					fGroup;
 	BString					fTitle;
 	BString					fContent;
 	int32					fTimestamp;
