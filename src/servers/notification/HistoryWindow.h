@@ -7,6 +7,7 @@
 #define _HISTORY_WINDOW_H
 
 
+#include <Bitmap.h>
 #include <ListView.h>
 #include <MenuField.h>
 #include <Path.h>
@@ -52,6 +53,9 @@ private:
 			BListView*			fListView;
 			BScrollView*		fScrollView;
 			NotificationView* 	fCurrentPreview;
+			float				fIconSize;
+			BBitmap*			fNewIcon;
+			BBitmap*			fMuteIcon;
 };
 
 class HistoryWindow : public BWindow {

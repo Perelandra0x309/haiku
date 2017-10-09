@@ -12,15 +12,19 @@
 #include "HistoryWindow.h"
 
 #include <Alert.h>
+#include <Application.h>
 #include <Box.h>
 #include <Catalog.h>
 #include <CheckBox.h>
 #include <DateFormat.h>
 #include <Directory.h>
 #include <FindDirectory.h>
+#include <IconUtils.h>
 #include <LayoutBuilder.h>
+#include <NodeInfo.h>
 #include <Notification.h>
 #include <Path.h>
+#include <Resources.h>
 #include <StringList.h>
 #include <TextControl.h>
 #include <Window.h>
@@ -81,30 +85,71 @@ HistoryView::HistoryView()
 	:
 	BView("history", B_WILL_DRAW | B_FRAME_EVENTS),
 	fShowingPreview(false),
-	fCurrentPreview(NULL)
+	fCurrentPreview(NULL),
+	fIconSize(0),
+	fNewIcon(NULL),
+	fMuteIcon(NULL)
 {
 	find_directory(B_USER_CACHE_DIRECTORY, &fCachePath);
 	fCachePath.Append("Notifications");
+	
+	// Icons
+	app_info info;
+	be_app->GetAppInfo(&info);
+	BResources resources(&info.ref);
+	if (resources.InitCheck() == B_OK) {
+		status_t result;
+		font_height fontHeight;
+		BFont font;
+		GetFont(&font);
+		font.GetHeight(&fontHeight);
+		fIconSize = fontHeight.ascent + fontHeight.descent
+			+ fontHeight.leading - 2;
+		BRect iconRect(0, 0, fIconSize - 1, fIconSize - 1);
+		size_t size;
+		// New notification icon
+		const void* newdata = resources.LoadResource(B_VECTOR_ICON_TYPE, 1001,
+			&size);
+		if (newdata != NULL) {
+			result = B_ERROR;
+			fNewIcon = new BBitmap(iconRect, B_RGBA32);
+			if (fNewIcon->InitCheck() == B_OK)
+				result = BIconUtils::GetVectorIcon((const uint8 *)newdata,
+					size, fNewIcon);
+			if (result != B_OK) {
+				delete fNewIcon;
+				fNewIcon = NULL;
+			}
+		}
+		// Mute icon
+		const void* mutedata = resources.LoadResource(B_VECTOR_ICON_TYPE,
+			1002, &size);
+		if (mutedata != NULL) {
+			result = B_ERROR;
+			fMuteIcon = new BBitmap(iconRect, B_RGBA32);
+			if (fMuteIcon->InitCheck() == B_OK)
+				result = BIconUtils::GetVectorIcon((const uint8 *)mutedata,
+					size, fMuteIcon);
+			if (result != B_OK) {
+				delete fMuteIcon;
+				fMuteIcon = NULL;
+			}
+		}
+	}
 	
 	// Search application field
 //	fSearch = new BTextControl(B_TRANSLATE("Search:"), NULL,
 //		new BMessage(kSettingChanged));
 
 	// Application menu
-	fDateSelectionMenu = new BPopUpMenu("notifications");
-	fDateSelectionMF = new BMenuField("Font Size Field",
+	fDateSelectionMenu = new BPopUpMenu("Choose:");
+	fDateSelectionMF = new BMenuField("Notifications Field",
 		B_TRANSLATE_COMMENT("View notifications:", "Menu label"), fDateSelectionMenu);
 	fDateSelectionMenu->AddItem(new BMenuItem("All",
 			new BMessage(kDateSelected)));
-	fDateSelectionMenu->AddItem(new BMenuItem("From today",
+	fDateSelectionMenu->AddItem(new BMenuItem("Muted notifications",
 			new BMessage(kDateSelected)));
-	fDateSelectionMenu->AddItem(new BMenuItem("Since yesterday",
-			new BMessage(kDateSelected)));
-	fDateSelectionMenu->AddItem(new BMenuItem("From the last 7 days",
-			new BMessage(kDateSelected)));
-	fDateSelectionMenu->AddItem(new BMenuItem("From the last 31 days",
-			new BMessage(kDateSelected)));
-	fDateSelectionMenu->AddItem(new BMenuItem("From the last year",
+	fDateSelectionMenu->AddItem(new BMenuItem("Missed notifications",
 			new BMessage(kDateSelected)));
 	
 
@@ -139,6 +184,10 @@ HistoryView::HistoryView()
 HistoryView::~HistoryView()
 {
 	_UpdatePreview(NULL, NULL);
+	delete fNewIcon;
+	fNewIcon = NULL;
+	delete fMuteIcon;
+	fMuteIcon = NULL;
 }
 
 
@@ -281,7 +330,8 @@ HistoryView::_PopulateNotifications()
 				&notificationData);
 			if (result != B_OK)
 				continue;
-			HistoryListItem* item = new HistoryListItem(notificationData);
+			HistoryListItem* item = new HistoryListItem(notificationData,
+				fNewIcon, fMuteIcon, fIconSize);
 			fListView->AddItem(item);
 			
 			// Get timestamp from notification

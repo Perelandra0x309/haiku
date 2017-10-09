@@ -7,18 +7,25 @@
  */
 #include "HistoryListItem.h"
 
+#include <Application.h>
 #include <DateFormat.h>
 #include <DateTime.h>
+#include <IconUtils.h>
+#include <Resources.h>
+#include <Roster.h>
 #include <TimeFormat.h>
 #include <notification/Notifications.h>
 
 static const float kTintedLineTint = 1.04;
 
 
-HistoryListItem::HistoryListItem(BMessage& notificationData)
+HistoryListItem::HistoryListItem(BMessage& notificationData, const BBitmap* newIcon,
+	const BBitmap* muteIcon, float iconSize)
 	:
 	BListItem(),
 	fInitStatus(B_ERROR),
+	fIconSize(iconSize),
+	fStatusIcon(NULL),
 	fIsDateDivider(false)
 {
 	status_t result = notificationData.FindMessage(kNameNotificationMessage, &fNotificationMessage);
@@ -38,6 +45,9 @@ HistoryListItem::HistoryListItem(BMessage& notificationData)
 	if (result != B_OK)
 		return;
 
+	if (!fWasAllowed)
+		fStatusIcon = new BBitmap(muteIcon);
+
 	fInitStatus = B_OK;
 }
 
@@ -46,6 +56,7 @@ HistoryListItem::HistoryListItem(int32 timestamp)
 	:
 	BListItem(),
 	fInitStatus(B_ERROR),
+	fStatusIcon(NULL),
 	fIsDateDivider(true)
 {
 	// Convert timestamp to midnight local
@@ -79,14 +90,16 @@ HistoryListItem::HistoryListItem(int32 timestamp)
 				fInitStatus = B_OK;
 		}
 	}
+	SetEnabled(false);
 }
 
 
-/*
+
 HistoryListItem::~HistoryListItem()
 {
-
-}*/
+	delete fStatusIcon;
+	fStatusIcon = NULL;
+}
 
 
 void
@@ -134,7 +147,6 @@ HistoryListItem::DrawItem(BView *owner, BRect item_rect, bool complete)
 		owner->DrawString(fDateLabel);
 	} else {
 		// Draw notification list item
-	//	float listItemHeight = Height();
 		rgb_color backgroundColor;
 		if(IsSelected())
 			backgroundColor = ui_color(B_LIST_SELECTED_BACKGROUND_COLOR);
@@ -142,8 +154,8 @@ HistoryListItem::DrawItem(BView *owner, BRect item_rect, bool complete)
 			backgroundColor = ui_color(B_LIST_BACKGROUND_COLOR);
 			BListView* listView = dynamic_cast<BListView*>(owner);
 			if(listView) {
-				int32 index = listView->IndexOf(this);
 				// Alternate tinted background
+				int32 index = listView->IndexOf(this);
 				if ( (index % 2) == 1)
 					backgroundColor = tint_color(backgroundColor,
 						kTintedLineTint);
@@ -153,17 +165,13 @@ HistoryListItem::DrawItem(BView *owner, BRect item_rect, bool complete)
 		owner->SetLowColor(backgroundColor);
 		owner->FillRect(item_rect);
 
-	//	if(listItemHeight > fTextOnlyHeight)
-	//		offset_height += floor( (listItemHeight - fTextOnlyHeight)/2 );
-				// center the text vertically
-		
 		// Time
 		BString timeString;
 		BTimeFormat timeFormatter;
 		timeFormatter.Format(timeString, fTimestamp, B_SHORT_TIME_FORMAT);
-		timeString.Append("    ");
+//		timeString.Append("    ");
 		
-		BPoint cursor(item_rect.left, item_rect.top + offset_height /*+ kTextMargin*/);
+		BPoint cursor(item_rect.left, item_rect.top + offset_height);
 		if (timeString.FindFirst(":") == 1)
 			cursor.x += owner->StringWidth("1");
 			// Indent times with a single digit hour
@@ -175,8 +183,14 @@ HistoryListItem::DrawItem(BView *owner, BRect item_rect, bool complete)
 		owner->DrawString(timeString);
 		
 		// Status icon
-		
-		
+		if (fStatusIcon != NULL && fStatusIcon->IsValid()) {
+			owner->SetDrawingMode(B_OP_ALPHA);
+			owner->DrawBitmap(fStatusIcon, BPoint(owner->PenLocation().x + 2.0,
+				item_rect.top + 1));
+			owner->SetDrawingMode(B_OP_COPY);
+		}
+		owner->MovePenBy(fIconSize + 4.0, 0.0);
+
 		// Group
 		if(IsSelected())
 			owner->SetHighColor(ui_color(B_LIST_SELECTED_ITEM_TEXT_COLOR));
@@ -214,8 +228,37 @@ HistoryListItem::Update(BView *owner, const BFont *font)
 	BListItem::Update(owner, font);
 	font_height fontHeight;
 	font->GetHeight(&fontHeight);
-	fFontHeight = fontHeight.ascent + fontHeight.descent + fontHeight.leading;
+//	fFontHeight = fontHeight.ascent + fontHeight.descent + fontHeight.leading;
 	fFontAscent = fontHeight.ascent;
+/*	
+	float iconSize = Height() - 2.0;
+	if (fMuteIcon == NULL
+		|| (fMuteIcon != NULL && fMuteIcon->Bounds().Height() != iconSize) ) {
+			
+		app_info info;
+		be_app->GetAppInfo(&info);
+		BResources resources(&info.ref);
+		status_t result;
+		BRect iconRect(0, 0, iconSize - 1, iconSize - 1);
+		size_t size;
+		const void* mutedata = resources.LoadResource(B_VECTOR_ICON_TYPE,
+			1002, &size);
+		if (mutedata != NULL) {
+			result = B_ERROR;
+			BBitmap* muteIcon = new BBitmap(iconRect, B_RGBA32);
+			if (muteIcon->InitCheck() == B_OK)
+				result = BIconUtils::GetVectorIcon((const uint8 *)mutedata,
+					size, muteIcon);
+			if (result != B_OK) {
+				delete muteIcon;
+				muteIcon = NULL;
+			}
+			delete fMuteIcon;
+			fMuteIcon = muteIcon;
+		}
+	}
+	if (!fWasAllowed)
+		fStatusIcon = fMuteIcon;*/
 }
 
 

@@ -5,6 +5,7 @@
 #ifndef _HISTORY_LIST_ITEM_H
 #define _HISTORY_LIST_ITEM_H
 
+#include <Bitmap.h>
 #include <InterfaceKit.h>
 #include <Message.h>
 #include <Notification.h>
@@ -14,9 +15,11 @@
 class HistoryListItem : public BListItem
 {
 public:
-							HistoryListItem(BMessage& notificationData);
+							HistoryListItem(BMessage& notificationData,
+								const BBitmap* newIcon,
+								const BBitmap* muteIcon, float iconSize);
 							HistoryListItem(int32 timestamp);
-//							~HistoryListItem();
+							~HistoryListItem();
 	virtual void			DrawItem(BView *owner, BRect item_rect,
 								bool complete = false);
 	virtual void			Update(BView *owner, const BFont *font);
@@ -35,7 +38,10 @@ private:
 	BString					fContent;
 	int32					fTimestamp;
 	bool					fWasAllowed;
-	float					fFontHeight, fFontAscent;
+	float					fIconSize;
+	BBitmap*				fStatusIcon;
+//	float					fFontHeight;
+	float					fFontAscent;
 	bool					fIsDateDivider;
 	BString					fDateLabel;
 };
