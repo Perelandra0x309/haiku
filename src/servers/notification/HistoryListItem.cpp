@@ -76,13 +76,6 @@ HistoryListItem::HistoryListItem(int32 timestamp)
 			BDateFormat formatter;
 			status_t result = formatter.Format(fDateLabel, fTimestamp,
 				B_LONG_DATE_FORMAT);
-			// TODO testing
-		/*	BString time;
-			BTimeFormat timeFormatter;
-			timeFormatter.Format(time, fTimestamp,
-				B_LONG_TIME_FORMAT);
-			fDateLabel.Append(" ").Append(time);*/
-			
 			if (result == B_OK)
 				fInitStatus = B_OK;
 		}
