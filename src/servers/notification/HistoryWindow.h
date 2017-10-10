@@ -52,6 +52,7 @@ private:
 			AppGroupView*		fGroupView;
 			BListView*			fListView;
 			BScrollView*		fScrollView;
+			BGroupLayout*		fPreviewLayout;
 			NotificationView* 	fCurrentPreview;
 			BList				fCacheData;
 			float				fIconSize;

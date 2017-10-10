@@ -163,6 +163,7 @@ HistoryView::HistoryView()
 		B_SINGLE_SELECTION_LIST, B_FOLLOW_ALL_SIDES);
 	fScrollView = new BScrollView("List Scroll View", fListView,
 		B_FOLLOW_ALL_SIDES, 0, false, true);
+	fScrollView->SetExplicitMinSize(BSize(300, 200));
 
 	// Preview view
 	fGroupView = new AppGroupView(BMessenger(this), "");
@@ -170,8 +171,11 @@ HistoryView::HistoryView()
 	BBox *box = new BBox("preview");
 	box->SetLabel(B_TRANSLATE("Notification View"));
 	BGroupLayout *boxLayout = BLayoutBuilder::Group<>(B_HORIZONTAL)
-    	.SetInsets(0, B_USE_DEFAULT_SPACING, 0, 0).Add(fGroupView);
+    	.SetInsets(0, B_USE_DEFAULT_SPACING, 0, 0)
+    	.Add(fGroupView);
     box->AddChild(boxLayout->View());
+    fPreviewLayout = BLayoutBuilder::Group<>(B_VERTICAL)
+    	.Add(box);
 
 	// Add views
 	BLayoutBuilder::Group<>(this, B_VERTICAL)
@@ -180,7 +184,7 @@ HistoryView::HistoryView()
 			.AddGlue()
 		.End()
 		.Add(fScrollView)
-		.Add(box)
+		.Add(fPreviewLayout)
 		.SetInsets(B_USE_WINDOW_SPACING)
 	.End();
 }
@@ -257,11 +261,18 @@ HistoryView::MessageReceived(BMessage* message)
 					newNotification, bigtime_t(10), B_LARGE_ICON, true); //TODO change
 				newPreview->SetPreviewModeOn(true);
 				_UpdatePreview(newPreview, newNotification->Group());
+			//	InvalidateLayout(true);  // TODO scroll to item
+			//	Window()->UpdateIfNeeded();
+			//	fListView->ScrollToSelection();
+			//	BMessenger(this).SendMessage('scro');
 			}
 			else
 				_UpdatePreview(NULL, NULL);
 			break;
 		}
+	//	case 'scro':
+	//		fListView->ScrollToSelection();
+	//		break;
 		default:
 			BView::MessageReceived(message);
 			break;
@@ -351,29 +362,27 @@ HistoryView::_PopulateNotifications()
 	int32 index;
 	int32 count = fCacheData.CountItems();
 	BStringList dateItemsList;
-	BList itemsList;
+	BList itemsToAddList;
+	BString dateLabel;
+	BDateFormat formatter;
 	for (index = 0; index < count; index++) {
 		HistoryListItem* item = (HistoryListItem*)fCacheData.ItemAt(index);
-		bool showItem = fSetSelection == MENU_SELECTION_ALL
-			|| (showOnlyMuted && !item->GetWasAllowed());
-		if (showItem) {
-			itemsList.AddItem(item);
-			
-			// Get timestamp from notification
-			int32 timestamp = item->GetTimestamp();
-			if (timestamp > 0) {
-				BString dateLabel;
-				BDateFormat formatter;
-				formatter.Format(dateLabel, timestamp, B_MEDIUM_DATE_FORMAT);
-				if (!dateItemsList.HasString(dateLabel)) {
-					HistoryListItem* dateItem = new HistoryListItem(timestamp);
-					itemsList.AddItem(dateItem);
-					dateItemsList.Add(dateLabel);
-				}
+		if (showOnlyMuted && item->GetWasAllowed())
+			continue;
+		itemsToAddList.AddItem(item);
+		
+		// Get timestamp from notification
+		int32 timestamp = item->GetTimestamp();
+		if (timestamp > 0) {
+			formatter.Format(dateLabel, timestamp, B_MEDIUM_DATE_FORMAT);
+			if (!dateItemsList.HasString(dateLabel)) {
+				HistoryListItem* dateItem = new HistoryListItem(timestamp);
+				itemsToAddList.AddItem(dateItem);
+				dateItemsList.Add(dateLabel);
 			}
 		}
 	}
-	fListView->AddList(&itemsList);
+	fListView->AddList(&itemsToAddList);
 	fListView->SortItems(CompareListItems);
 	BScrollBar* scrollbar = fScrollView->ScrollBar(B_VERTICAL);
 	float max;
@@ -409,10 +418,12 @@ HistoryView::_UpdatePreview(NotificationView* view, const char* group)
 	if (view == NULL) {
 		fCurrentPreview = NULL;
 		fShowingPreview = false;
+		fPreviewLayout->SetVisible(false);
 	} else {
 		fGroupView->AddInfo(view);
 		fGroupView->SetGroup(group);
 		fCurrentPreview = view;
 		fShowingPreview = true;
+		fPreviewLayout->SetVisible(true);
 	}
 }
