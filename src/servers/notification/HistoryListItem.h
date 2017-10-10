@@ -26,6 +26,8 @@ public:
 			int				TimestampCompare(HistoryListItem* item);
 			status_t		InitStatus() { return fInitStatus; }
 			BMessage		GetMessage() { return fNotificationMessage; }
+			int32			GetTimestamp() { return fTimestamp; }
+			bool			GetWasAllowed() { return fWasAllowed; }
 			bool			IsDateDivider() { return fIsDateDivider; }
 			const char*		DateLabel();
 

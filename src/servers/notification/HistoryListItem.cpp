@@ -24,6 +24,7 @@ HistoryListItem::HistoryListItem(BMessage& notificationData, const BBitmap* newI
 	:
 	BListItem(),
 	fInitStatus(B_ERROR),
+	fWasAllowed(true),
 	fIconSize(iconSize),
 	fStatusIcon(NULL),
 	fIsDateDivider(false)
@@ -38,13 +39,9 @@ HistoryListItem::HistoryListItem(BMessage& notificationData, const BBitmap* newI
 	fContent = notification.Content();
 	
 	result = notificationData.FindInt32(kNameTimestamp, &fTimestamp);
-	if (result != B_OK)
-		return;
-
 	result = notificationData.FindBool(kNameWasAllowed, &fWasAllowed);
 	if (result != B_OK)
-		return;
-
+		fWasAllowed = true;
 	if (!fWasAllowed)
 		fStatusIcon = new BBitmap(muteIcon);
 
