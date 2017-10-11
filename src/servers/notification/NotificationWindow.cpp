@@ -197,7 +197,7 @@ NotificationWindow::MessageReceived(BMessage* message)
 
 				// Cache notification
 				BString messageID(notification->MessageID());
-				if (messageID.Compare("NotificationsSample") != 0) { // TODO fix != kSampleMessageID) {
+				if (messageID.Compare(kSampleMessageID) != 0) {
 					time_t currentTime = time(NULL);
 					BDate currentDate(currentTime);
 					BString dateString;

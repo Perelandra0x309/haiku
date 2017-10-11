@@ -44,7 +44,6 @@ const uint32 kWidthChanged = '_WIC';
 const uint32 kTimeoutChanged = '_TIC';
 const uint32 kShowDeskbarChanged = '_SDC';
 const uint32 kServerChangeTriggered = '_SCT';
-const BString kSampleMessageID("NotificationsSample");
 
 
 GeneralView::GeneralView(SettingsHost* host)

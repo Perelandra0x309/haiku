@@ -29,8 +29,6 @@
 #undef B_TRANSLATION_CONTEXT
 #define B_TRANSLATION_CONTEXT "PrefletWin"
 
-const BString kSampleMessageID("NotificationsSample");
-
 
 PrefletWin::PrefletWin()
 	:

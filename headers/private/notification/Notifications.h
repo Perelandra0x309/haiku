@@ -12,6 +12,7 @@
 
 // Messages
 const uint32 kNotificationMessage = 'nssm';
+const BString kSampleMessageID("NotificationsSample");
 
 // Archived notifications
 const uint32 kNotificationsArchive = 'nota';
