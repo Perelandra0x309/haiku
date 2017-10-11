@@ -197,6 +197,12 @@ HistoryView::~HistoryView()
 	fNewIcon = NULL;
 	delete fMuteIcon;
 	fMuteIcon = NULL;
+	
+	fMutedList.MakeEmpty();
+	while (!fAllList.IsEmpty()) {
+		BListItem *item = (BListItem*)fAllList.RemoveItem(0l);
+		delete item;
+	}
 }
 
 
@@ -308,10 +314,9 @@ HistoryView::Draw(BRect updateRect)
 void
 HistoryView::_LoadCacheData()
 {
-	// TODO verify list view is empty??
-	
-	while (!fCacheData.IsEmpty()) {
-		BListItem *item = (BListItem*)fCacheData.RemoveItem(int32(0));
+	fMutedList.MakeEmpty();
+	while (!fAllList.IsEmpty()) {
+		BListItem *item = (BListItem*)fAllList.RemoveItem(0l);
 		delete item;
 	}
 
@@ -332,6 +337,12 @@ HistoryView::_LoadCacheData()
 		if (!_ArchiveIsValid(archive, count))
 			return;
 
+		
+		BStringList allListDateItems;
+		BStringList	mutedListDateItems;
+		BString dateLabel;
+		BDateFormat formatter;
+		HistoryListItem* dateItem = NULL;
 		int32 index;
 		for (index = 0; index < count; index++) {
 			// Get notification
@@ -340,9 +351,31 @@ HistoryView::_LoadCacheData()
 				&notificationData);
 			if (result != B_OK)
 				continue;
+			
+			// All notifications list
 			HistoryListItem* item = new HistoryListItem(notificationData,
 				fNewIcon, fMuteIcon, fIconSize);
-			fCacheData.AddItem(item);
+			// Get timestamp from notification
+			int32 timestamp = item->GetTimestamp();
+			if (timestamp > 0) {
+				formatter.Format(dateLabel, timestamp, B_MEDIUM_DATE_FORMAT);
+				if (!allListDateItems.HasString(dateLabel)) {
+					dateItem = new HistoryListItem(timestamp);
+					fAllList.AddItem(dateItem);
+					allListDateItems.Add(dateLabel);
+				}
+			}
+			fAllList.AddItem(item);
+			
+			// Muted notifications list
+			if (!item->GetWasAllowed()) {
+				if (timestamp > 0 &&
+					!mutedListDateItems.HasString(dateLabel)) {
+					fMutedList.AddItem(dateItem);
+					mutedListDateItems.Add(dateLabel);
+				}
+				fMutedList.AddItem(item);
+			}
 		}
 	}
 }
@@ -351,15 +384,11 @@ HistoryView::_LoadCacheData()
 void
 HistoryView::_PopulateNotifications()
 {
-	while (!fListView->IsEmpty())
-		fListView->RemoveItem(int32(0));
+//	if (fSetSelection == MENU_SELECTION_NONE)
+//		return;
 
-	if (fSetSelection == MENU_SELECTION_NONE)
-		return;
-
-	bool showOnlyMuted = fSetSelection == MENU_SELECTION_MUTED;
-
-	int32 index;
+//	bool showOnlyMuted = fSetSelection == MENU_SELECTION_MUTED;
+/*	int32 index;
 	int32 count = fCacheData.CountItems();
 	BStringList dateItemsList;
 	BList itemsToAddList;
@@ -381,8 +410,15 @@ HistoryView::_PopulateNotifications()
 				dateItemsList.Add(dateLabel);
 			}
 		}
-	}
-	fListView->AddList(&itemsToAddList);
+	}*/
+	fListView->MakeEmpty();
+//	fListView->AddList(&itemsToAddList);
+	if (fSetSelection == MENU_SELECTION_ALL)
+		fListView->AddList(&fAllList);
+	else if (fSetSelection == MENU_SELECTION_MUTED)
+		fListView->AddList(&fMutedList);
+	else
+		return;
 	fListView->SortItems(CompareListItems);
 	BScrollBar* scrollbar = fScrollView->ScrollBar(B_VERTICAL);
 	float max;

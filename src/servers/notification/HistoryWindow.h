@@ -54,7 +54,8 @@ private:
 			BScrollView*		fScrollView;
 			BGroupLayout*		fPreviewLayout;
 			NotificationView* 	fCurrentPreview;
-			BList				fCacheData;
+			BList				fAllList;
+			BList				fMutedList;
 			float				fIconSize;
 			BBitmap*			fNewIcon;
 			BBitmap*			fMuteIcon;
