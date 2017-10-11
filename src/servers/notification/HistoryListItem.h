@@ -39,6 +39,7 @@ private:
 	BString					fTitle;
 	BString					fContent;
 	int32					fTimestamp;
+	BString					fTimeString;
 	bool					fWasAllowed;
 	float					fIconSize;
 	BBitmap*				fStatusIcon;

@@ -17,6 +17,12 @@
 #include <notification/Notifications.h>
 
 static const float kTintedLineTint = 1.04;
+static const float kIconMargin = 2.0;
+static rgb_color backgroundRGB = ui_color(B_LIST_BACKGROUND_COLOR);
+static rgb_color textRGB = ui_color(B_LIST_ITEM_TEXT_COLOR);
+static rgb_color selectedBackgroundRGB =
+	ui_color(B_LIST_SELECTED_BACKGROUND_COLOR);
+static rgb_color selectedTextRGB = ui_color(B_LIST_SELECTED_ITEM_TEXT_COLOR);
 
 
 HistoryListItem::HistoryListItem(BMessage& notificationData, const BBitmap* newIcon,
@@ -39,6 +45,10 @@ HistoryListItem::HistoryListItem(BMessage& notificationData, const BBitmap* newI
 	fContent = notification.Content();
 	
 	result = notificationData.FindInt32(kNameTimestamp, &fTimestamp);
+	if (result == B_OK) {
+		BTimeFormat timeFormatter;
+		timeFormatter.Format(fTimeString, fTimestamp, B_SHORT_TIME_FORMAT);
+	}
 	result = notificationData.FindBool(kNameWasAllowed, &fWasAllowed);
 	if (result != B_OK)
 		fWasAllowed = true;
@@ -96,13 +106,11 @@ void
 HistoryListItem::DrawItem(BView *owner, BRect item_rect, bool complete)
 {
 	owner->PushState();
-	
 	float offset_height = fFontAscent;
 	
 	if (fIsDateDivider) {
 		// Draw date header
-		rgb_color headerBackground =
-			tint_color(ui_color(B_LIST_SELECTED_BACKGROUND_COLOR), 0.7);
+		rgb_color headerBackground = tint_color(selectedBackgroundRGB, 0.7);
 		owner->SetHighColor(headerBackground);
 		owner->SetLowColor(headerBackground);
 		owner->FillRect(item_rect);
@@ -126,22 +134,23 @@ HistoryListItem::DrawItem(BView *owner, BRect item_rect, bool complete)
 		owner->GetFont(&ownerFont);
 		ownerFont.SetFace(B_BOLD_FACE);
 		owner->SetFont(&ownerFont, B_FONT_FACE);
-		owner->SetHighColor(ui_color(B_LIST_SELECTED_ITEM_TEXT_COLOR));
+		owner->SetHighColor(selectedTextRGB);
 //		owner->MovePenTo(roundRect.left + xyRadius + 1,
 //			roundRect.top + offset_height - 1);
 		float stringWidth = owner->StringWidth(fDateLabel);
 		float listWidth;
 		owner->GetPreferredSize(&listWidth, NULL);
-		float insetX = (listWidth - stringWidth) / 2.0;
-		owner->MovePenTo(item_rect.left + insetX, item_rect.top + offset_height - 1);
+	//	float insetX = (listWidth - stringWidth) / 2.0;
+		owner->MovePenTo(item_rect.left + (listWidth - stringWidth) / 2.0,
+			item_rect.top + offset_height - 1);
 		owner->DrawString(fDateLabel);
 	} else {
 		// Draw notification list item
 		rgb_color backgroundColor;
 		if(IsSelected())
-			backgroundColor = ui_color(B_LIST_SELECTED_BACKGROUND_COLOR);
+			backgroundColor = selectedBackgroundRGB;
 		else {
-			backgroundColor = ui_color(B_LIST_BACKGROUND_COLOR);
+			backgroundColor = backgroundRGB;
 			BListView* listView = dynamic_cast<BListView*>(owner);
 			if(listView) {
 				// Alternate tinted background
@@ -156,36 +165,31 @@ HistoryListItem::DrawItem(BView *owner, BRect item_rect, bool complete)
 		owner->FillRect(item_rect);
 
 		// Time
-		BString timeString;
-		BTimeFormat timeFormatter;
-		timeFormatter.Format(timeString, fTimestamp, B_SHORT_TIME_FORMAT);
-//		timeString.Append("    ");
-		
 		BPoint cursor(item_rect.left, item_rect.top + offset_height);
-		if (timeString.FindFirst(":") == 1)
+		if (fTimeString.FindFirst(":") == 1)
 			cursor.x += owner->StringWidth("1");
 			// Indent times with a single digit hour
 		if(IsSelected())
-			owner->SetHighColor(tint_color(ui_color(B_LIST_SELECTED_ITEM_TEXT_COLOR), 0.7));
+			owner->SetHighColor(tint_color(selectedTextRGB, 0.7));
 		else
-			owner->SetHighColor(tint_color(ui_color(B_LIST_ITEM_TEXT_COLOR), 0.7));
+			owner->SetHighColor(tint_color(textRGB, 0.7));
 		owner->MovePenTo(cursor.x, cursor.y);
-		owner->DrawString(timeString);
+		owner->DrawString(fTimeString);
 		
 		// Status icon
 		if (fStatusIcon != NULL && fStatusIcon->IsValid()) {
 			owner->SetDrawingMode(B_OP_ALPHA);
-			owner->DrawBitmap(fStatusIcon, BPoint(owner->PenLocation().x + 2.0,
-				item_rect.top + 1));
+			owner->DrawBitmap(fStatusIcon, BPoint(owner->PenLocation().x
+				+ kIconMargin, item_rect.top + 1));
 			owner->SetDrawingMode(B_OP_COPY);
 		}
-		owner->MovePenBy(fIconSize + 4.0, 0.0);
+		owner->MovePenBy(fIconSize + 2 * kIconMargin, 0.0);
 
 		// Group
 		if(IsSelected())
-			owner->SetHighColor(ui_color(B_LIST_SELECTED_ITEM_TEXT_COLOR));
+			owner->SetHighColor(selectedTextRGB);
 		else
-			owner->SetHighColor(ui_color(B_LIST_ITEM_TEXT_COLOR));
+			owner->SetHighColor(textRGB);
 		if (fGroup.Length() > 0) {
 			owner->PushState();
 			BFont ownerFont;
@@ -220,6 +224,7 @@ HistoryListItem::Update(BView *owner, const BFont *font)
 	font->GetHeight(&fontHeight);
 //	fFontHeight = fontHeight.ascent + fontHeight.descent + fontHeight.leading;
 	fFontAscent = fontHeight.ascent;
+//	fTimeWidth = owner->StringWidth(
 /*	
 	float iconSize = Height() - 2.0;
 	if (fMuteIcon == NULL
