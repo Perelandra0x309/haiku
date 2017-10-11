@@ -45,6 +45,7 @@ private:
 	BBitmap*				fStatusIcon;
 //	float					fFontHeight;
 	float					fFontAscent;
+	float					fTimeStringWidth;
 	bool					fIsDateDivider;
 	BString					fDateLabel;
 };

@@ -175,6 +175,7 @@ HistoryListItem::DrawItem(BView *owner, BRect item_rect, bool complete)
 			owner->SetHighColor(tint_color(textRGB, 0.7));
 		owner->MovePenTo(cursor.x, cursor.y);
 		owner->DrawString(fTimeString);
+		owner->MovePenTo(item_rect.left + fTimeStringWidth, cursor.y);
 		
 		// Status icon
 		if (fStatusIcon != NULL && fStatusIcon->IsValid()) {
@@ -224,7 +225,20 @@ HistoryListItem::Update(BView *owner, const BFont *font)
 	font->GetHeight(&fontHeight);
 //	fFontHeight = fontHeight.ascent + fontHeight.descent + fontHeight.leading;
 	fFontAscent = fontHeight.ascent;
-//	fTimeWidth = owner->StringWidth(
+	
+	BDate today(time(NULL));
+	BTime midnightTime(0, 0, 0);
+	BTime noonTime(12, 0, 0);
+	BTimeFormat timeFormatter;
+	BString timeString;
+	BDateTime dateTime(today, midnightTime);
+	timeFormatter.Format(timeString, dateTime.Time_t(), B_SHORT_TIME_FORMAT);
+	fTimeStringWidth = owner->StringWidth(timeString);
+	dateTime.SetTime(noonTime);
+	timeFormatter.Format(timeString, dateTime.Time_t(), B_SHORT_TIME_FORMAT);
+	fTimeStringWidth = std::max(fTimeStringWidth,
+		owner->StringWidth(timeString));
+	
 /*	
 	float iconSize = Height() - 2.0;
 	if (fMuteIcon == NULL
