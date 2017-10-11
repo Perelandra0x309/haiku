@@ -20,6 +20,8 @@ class NotificationWindow;
 class NotificationView;
 
 typedef std::vector<NotificationView*> infoview_t;
+const uint32 kRemoveGroupView = 'RGVi';
+const uint32 kHideGroupView = 'HGVi';
 
 class AppGroupView : public BGroupView {
 public:

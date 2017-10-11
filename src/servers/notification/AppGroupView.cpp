@@ -135,10 +135,6 @@ AppGroupView::_DrawCloseButton(const BRect& updateRect)
 void
 AppGroupView::MouseDown(BPoint point)
 {
-	// Preview Mode ignores any mouse clicks
-	if (fPreviewModeOn)
-		return;
-
 	if (BRect(fCloseRect).InsetBySelf(-5, -5).Contains(point)) {
 		int32 children = fInfo.size();
 		for (int32 i = 0; i < children; i++) {
@@ -148,11 +144,19 @@ AppGroupView::MouseDown(BPoint point)
 
 		fInfo.clear();
 
-		// Remove ourselves from the parent view
-		BMessage message(kRemoveGroupView);
-		message.AddPointer("view", this);
-		fMessenger.SendMessage(&message);
-	} else if (BRect(fCollapseRect).InsetBySelf(-5, -5).Contains(point)) {
+		if (fPreviewModeOn) {
+			BMessage message(kHideGroupView);
+			fMessenger.SendMessage(&message);
+		} else {
+			// Remove ourselves from the parent view
+			BMessage message(kRemoveGroupView);
+			message.AddPointer("view", this);
+			fMessenger.SendMessage(&message);
+		}
+	} else if (fPreviewModeOn)
+		// Preview Mode ignores any mouse clicks
+		return;
+	else if (BRect(fCollapseRect).InsetBySelf(-5, -5).Contains(point)) {
 		fCollapsed = !fCollapsed;
 		int32 children = fInfo.size();
 		if (fCollapsed) {
@@ -195,7 +199,7 @@ AppGroupView::MessageReceived(BMessage* msg)
 
 			fMessenger.SendMessage(msg);
 
-			if (!this->HasChildren()) {
+			if (!this->HasChildren() && !fPreviewModeOn) {
 				Hide();
 				BMessage removeSelfMessage(kRemoveGroupView);
 				removeSelfMessage.AddPointer("view", this);

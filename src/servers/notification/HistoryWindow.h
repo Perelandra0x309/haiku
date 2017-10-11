@@ -53,6 +53,7 @@ private:
 			BListView*			fListView;
 			BScrollView*		fScrollView;
 			BGroupLayout*		fPreviewLayout;
+			BGroupLayout*		fBoxLayout;
 			NotificationView* 	fCurrentPreview;
 			BList				fAllList;
 			BList				fMutedList;

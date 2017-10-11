@@ -28,7 +28,7 @@ struct property_info;
 typedef std::map<BString, AppGroupView*> appview_t;
 typedef std::map<BString, AppUsage*> appfilter_t;
 
-const uint32 kRemoveGroupView = 'RGVi';
+//const uint32 kRemoveGroupView = 'RGVi';
 
 
 class NotificationWindow : public BWindow {

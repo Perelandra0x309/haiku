@@ -166,14 +166,11 @@ HistoryView::HistoryView()
 	fScrollView->SetExplicitMinSize(BSize(300, 200));
 
 	// Preview view
-	fGroupView = new AppGroupView(BMessenger(this), "");
-	fGroupView->SetPreviewModeOn(true);
 	BBox *box = new BBox("preview");
 	box->SetLabel(B_TRANSLATE("Notification View"));
-	BGroupLayout *boxLayout = BLayoutBuilder::Group<>(B_HORIZONTAL)
-    	.SetInsets(0, B_USE_DEFAULT_SPACING, 0, 0)
-    	.Add(fGroupView);
-    box->AddChild(boxLayout->View());
+	fBoxLayout = BLayoutBuilder::Group<>(B_HORIZONTAL)
+    	.SetInsets(0, B_USE_DEFAULT_SPACING, 0, 0);
+    box->AddChild(fBoxLayout->View());
     fPreviewLayout = BLayoutBuilder::Group<>(B_VERTICAL)
     	.Add(box);
 
@@ -217,10 +214,18 @@ HistoryView::AttachedToWindow()
 		B_ANY_SOURCE, B_KEY_DOWN, CatchDelete));
 #endif
 
+	// Need to add group view here for messenger to be valid
+	BMessenger thisMessenger(this);
+	fGroupView = new AppGroupView(thisMessenger, "");
+	fGroupView->SetPreviewModeOn(true);
+	fBoxLayout->AddView(fGroupView);
+	fPreviewLayout->SetVisible(false);
+
+	// Show all notifications
 	fSetSelectionMenu->SetTargetForItems(this);
 	_LoadCacheData();
 	fSetSelectionMenu->ItemAt(0)->SetMarked(true);
-	BMessenger(this).SendMessage(kMenuChanged);
+	thisMessenger.SendMessage(kMenuChanged);
 }
 
 
@@ -254,7 +259,8 @@ HistoryView::MessageReceived(BMessage* message)
 			_PopulateNotifications();
 			break;
 		}
-		case kNotificationSelected: {
+		case kNotificationSelected:
+		{
 			int32 selectedIndex = fListView->CurrentSelection();
 			if(selectedIndex >= 0) {
 				HistoryListItem *selectedItem =
@@ -271,14 +277,19 @@ HistoryView::MessageReceived(BMessage* message)
 			//	Window()->UpdateIfNeeded();
 			//	fListView->ScrollToSelection();
 			//	BMessenger(this).SendMessage('scro');
-			}
-			else
+			} else
 				_UpdatePreview(NULL, NULL);
 			break;
 		}
 	//	case 'scro':
 	//		fListView->ScrollToSelection();
 	//		break;
+		case kHideGroupView:
+			fListView->DeselectAll();
+			break;
+		case kRemoveGroupView:
+			// Do nothing
+			break;
 		default:
 			BView::MessageReceived(message);
 			break;
@@ -335,7 +346,7 @@ HistoryView::_LoadCacheData()
 		// Check if message archive is valid
 		int32 count;
 		if (!_ArchiveIsValid(archive, count))
-			return;
+			continue;
 
 		
 		BStringList allListDateItems;
@@ -384,35 +395,7 @@ HistoryView::_LoadCacheData()
 void
 HistoryView::_PopulateNotifications()
 {
-//	if (fSetSelection == MENU_SELECTION_NONE)
-//		return;
-
-//	bool showOnlyMuted = fSetSelection == MENU_SELECTION_MUTED;
-/*	int32 index;
-	int32 count = fCacheData.CountItems();
-	BStringList dateItemsList;
-	BList itemsToAddList;
-	BString dateLabel;
-	BDateFormat formatter;
-	for (index = 0; index < count; index++) {
-		HistoryListItem* item = (HistoryListItem*)fCacheData.ItemAt(index);
-		if (showOnlyMuted && item->GetWasAllowed())
-			continue;
-		itemsToAddList.AddItem(item);
-		
-		// Get timestamp from notification
-		int32 timestamp = item->GetTimestamp();
-		if (timestamp > 0) {
-			formatter.Format(dateLabel, timestamp, B_MEDIUM_DATE_FORMAT);
-			if (!dateItemsList.HasString(dateLabel)) {
-				HistoryListItem* dateItem = new HistoryListItem(timestamp);
-				itemsToAddList.AddItem(dateItem);
-				dateItemsList.Add(dateLabel);
-			}
-		}
-	}*/
 	fListView->MakeEmpty();
-//	fListView->AddList(&itemsToAddList);
 	if (fSetSelection == MENU_SELECTION_ALL)
 		fListView->AddList(&fAllList);
 	else if (fSetSelection == MENU_SELECTION_MUTED)
@@ -445,17 +428,20 @@ HistoryView::_ArchiveIsValid(BMessage& archive, int32& count)
 void
 HistoryView::_UpdatePreview(NotificationView* view, const char* group)
 {
-	if (fShowingPreview && fCurrentPreview != NULL) {
+	if (fShowingPreview) {
 		BMessage msg(kRemoveView);
 		msg.AddPointer("view", fCurrentPreview);
 		fGroupView->MessageReceived(&msg);
-		fCurrentPreview = NULL;
-	}
-	if (view == NULL) {
-		fCurrentPreview = NULL;
-		fShowingPreview = false;
-		fPreviewLayout->SetVisible(false);
-	} else {
+		if (view != NULL) {
+			fCurrentPreview = view;
+			fGroupView->AddInfo(view);
+			fGroupView->SetGroup(group);
+		} else {
+			fCurrentPreview = NULL;
+			fShowingPreview = false;
+			fPreviewLayout->SetVisible(false);
+		}
+	} else if (view != NULL) {
 		fGroupView->AddInfo(view);
 		fGroupView->SetGroup(group);
 		fCurrentPreview = view;
