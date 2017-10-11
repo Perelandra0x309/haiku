@@ -90,15 +90,6 @@ PrefletWin::MessageReceived(BMessage* msg)
 		case kApply:
 		case kApplyWithExample:
 		{
-			BPath path;
-
-			status_t ret = B_OK;
-			ret = find_directory(B_USER_SETTINGS_DIRECTORY, &path);
-			if (ret != B_OK)
-				return;
-
-			path.Append(kSettingsFile);
-
 			BMessage settingsStore;
 			int32 count = fMainView->CountTabs();
 			for (int32 i = 0; i < count; i++) {
@@ -114,9 +105,10 @@ PrefletWin::MessageReceived(BMessage* msg)
 			}
 
 			// Save settings file
-			BFile file(path.Path(), B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE);
-			ret = settingsStore.Flatten(&file);
-			if (ret != B_OK) {
+			BFile file(fSettingsPath.Path(), B_WRITE_ONLY | B_CREATE_FILE
+				| B_ERASE_FILE);
+			status_t result = settingsStore.Flatten(&file);
+			if (result != B_OK) {
 				BAlert* alert = new BAlert("",
 					B_TRANSLATE("An error occurred saving the preferences.\n"
 						"It's possible you are running out of disk space."),
