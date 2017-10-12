@@ -17,6 +17,7 @@
 #include <Catalog.h>
 #include <CheckBox.h>
 #include <DateFormat.h>
+#include <DateTime.h>
 #include <Directory.h>
 #include <FindDirectory.h>
 #include <IconUtils.h>
@@ -27,6 +28,7 @@
 #include <Resources.h>
 #include <StringList.h>
 #include <TextControl.h>
+#include <TimeFormat.h>
 #include <Window.h>
 
 #include <notification/Notifications.h>
@@ -72,7 +74,6 @@ HistoryWindow::HistoryWindow()
 	.End();
 	CenterOnScreen();
 	Show();
-		// TODO remove when finished testing history
 }
 
 
@@ -90,58 +91,11 @@ HistoryView::HistoryView()
 	BView("history", B_WILL_DRAW | B_FRAME_EVENTS),
 	fShowingPreview(false),
 	fSetSelection(MENU_SELECTION_NONE),
-	fCurrentPreview(NULL),
-	fIconSize(0),
-	fNewIcon(NULL),
-	fMuteIcon(NULL)
+	fCurrentPreview(NULL)
 {
 	find_directory(B_USER_CACHE_DIRECTORY, &fCachePath);
 	fCachePath.Append("Notifications");
-	
-	// Icons
-	app_info info;
-	be_app->GetAppInfo(&info);
-	BResources resources(&info.ref);
-	if (resources.InitCheck() == B_OK) {
-		status_t result;
-		font_height fontHeight;
-		BFont font;
-		GetFont(&font);
-		font.GetHeight(&fontHeight);
-		fIconSize = fontHeight.ascent + fontHeight.descent
-			+ fontHeight.leading - 2;
-		BRect iconRect(0, 0, fIconSize - 1, fIconSize - 1);
-		size_t size;
-		// New notification icon
-		const void* newdata = resources.LoadResource(B_VECTOR_ICON_TYPE, 1001,
-			&size);
-		if (newdata != NULL) {
-			result = B_ERROR;
-			fNewIcon = new BBitmap(iconRect, B_RGBA32);
-			if (fNewIcon->InitCheck() == B_OK)
-				result = BIconUtils::GetVectorIcon((const uint8 *)newdata,
-					size, fNewIcon);
-			if (result != B_OK) {
-				delete fNewIcon;
-				fNewIcon = NULL;
-			}
-		}
-		// Mute icon
-		const void* mutedata = resources.LoadResource(B_VECTOR_ICON_TYPE,
-			1002, &size);
-		if (mutedata != NULL) {
-			result = B_ERROR;
-			fMuteIcon = new BBitmap(iconRect, B_RGBA32);
-			if (fMuteIcon->InitCheck() == B_OK)
-				result = BIconUtils::GetVectorIcon((const uint8 *)mutedata,
-					size, fMuteIcon);
-			if (result != B_OK) {
-				delete fMuteIcon;
-				fMuteIcon = NULL;
-			}
-		}
-	}
-	
+
 	// Search application field
 //	fSearch = new BTextControl(B_TRANSLATE("Search:"), NULL,
 //		new BMessage(kSettingChanged));
@@ -159,15 +113,14 @@ HistoryView::HistoryView()
 	
 
 	// Application list view
-	fListView = new BListView(BRect(0, 0, 500, 100), "Notification List View",
-		B_SINGLE_SELECTION_LIST, B_FOLLOW_ALL_SIDES);
+	fListView = new HistoryListView();
 	fScrollView = new BScrollView("List Scroll View", fListView,
 		B_FOLLOW_ALL_SIDES, 0, false, true);
 	fScrollView->SetExplicitMinSize(BSize(300, 200));
 
 	// Preview view
 	BBox *box = new BBox("preview");
-	box->SetLabel(B_TRANSLATE("Notification View"));
+//	box->SetLabel(B_TRANSLATE("Notification View"));
 	fBoxLayout = BLayoutBuilder::Group<>(B_HORIZONTAL)
     	.SetInsets(0, B_USE_DEFAULT_SPACING, 0, 0);
     box->AddChild(fBoxLayout->View());
@@ -190,11 +143,8 @@ HistoryView::HistoryView()
 HistoryView::~HistoryView()
 {
 	_UpdatePreview(NULL, NULL);
-	delete fNewIcon;
-	fNewIcon = NULL;
-	delete fMuteIcon;
-	fMuteIcon = NULL;
 	
+	fListView->MakeEmpty();
 	fMutedList.MakeEmpty();
 	while (!fAllList.IsEmpty()) {
 		BListItem *item = (BListItem*)fAllList.RemoveItem(0l);
@@ -301,6 +251,7 @@ void
 HistoryView::Draw(BRect updateRect)
 {
 	BView::Draw(updateRect);
+	// Draw message when there are no list items
 	if (fListView->IsEmpty()) {
 		fListView->PushState();
 		float width, height;
@@ -348,7 +299,7 @@ HistoryView::_LoadCacheData()
 		if (!_ArchiveIsValid(archive, count))
 			continue;
 
-		
+		float iconSize = fListView->GetIconSize();
 		BStringList allListDateItems;
 		BStringList	mutedListDateItems;
 		BString dateLabel;
@@ -365,7 +316,7 @@ HistoryView::_LoadCacheData()
 			
 			// All notifications list
 			HistoryListItem* item = new HistoryListItem(notificationData,
-				fNewIcon, fMuteIcon, fIconSize);
+				iconSize);
 			// Get timestamp from notification
 			int32 timestamp = item->GetTimestamp();
 			if (timestamp > 0) {
@@ -403,10 +354,10 @@ HistoryView::_PopulateNotifications()
 	else
 		return;
 	fListView->SortItems(CompareListItems);
-	BScrollBar* scrollbar = fScrollView->ScrollBar(B_VERTICAL);
+/*	BScrollBar* scrollbar = fScrollView->ScrollBar(B_VERTICAL);
 	float max;
 	scrollbar->GetRange(NULL, &max);
-	scrollbar->SetValue(max);
+	scrollbar->SetValue(max);*/
 }
 
 
@@ -448,4 +399,78 @@ HistoryView::_UpdatePreview(NotificationView* view, const char* group)
 		fShowingPreview = true;
 		fPreviewLayout->SetVisible(true);
 	}
+}
+
+
+HistoryListView::HistoryListView()
+	:
+	BListView(BRect(0, 0, 500, 100), "Notification List View",
+		B_SINGLE_SELECTION_LIST, B_FOLLOW_ALL_SIDES)
+{
+	// Max date width
+	BDate today(time(NULL));
+	BTime midnightTime(0, 0, 0);
+	BTime noonTime(12, 0, 0);
+	BTimeFormat timeFormatter;
+	BString timeString;
+	BDateTime dateTime(today, midnightTime);
+	timeFormatter.Format(timeString, dateTime.Time_t(), B_SHORT_TIME_FORMAT);
+	fTimeStringWidth = StringWidth(timeString);
+	dateTime.SetTime(noonTime);
+	timeFormatter.Format(timeString, dateTime.Time_t(), B_SHORT_TIME_FORMAT);
+	fTimeStringWidth = std::max(fTimeStringWidth, StringWidth(timeString));
+	
+	
+	// Icons
+	app_info info;
+	be_app->GetAppInfo(&info);
+	BResources resources(&info.ref);
+	if (resources.InitCheck() == B_OK) {
+		status_t result;
+		font_height fontHeight;
+		BFont font;
+		GetFont(&font);
+		font.GetHeight(&fontHeight);
+		fIconSize = fontHeight.ascent + fontHeight.descent
+			+ fontHeight.leading - 2;
+		BRect iconRect(0, 0, fIconSize - 1, fIconSize - 1);
+		size_t size;
+		// New notification icon
+		const void* newdata = resources.LoadResource(B_VECTOR_ICON_TYPE, 1001,
+			&size);
+		if (newdata != NULL) {
+			result = B_ERROR;
+			fNewIcon = new BBitmap(iconRect, B_RGBA32);
+			if (fNewIcon->InitCheck() == B_OK)
+				result = BIconUtils::GetVectorIcon((const uint8 *)newdata,
+					size, fNewIcon);
+			if (result != B_OK) {
+				delete fNewIcon;
+				fNewIcon = NULL;
+			}
+		}
+		// Mute icon
+		const void* mutedata = resources.LoadResource(B_VECTOR_ICON_TYPE,
+			1002, &size);
+		if (mutedata != NULL) {
+			result = B_ERROR;
+			fMuteIcon = new BBitmap(iconRect, B_RGBA32);
+			if (fMuteIcon->InitCheck() == B_OK)
+				result = BIconUtils::GetVectorIcon((const uint8 *)mutedata,
+					size, fMuteIcon);
+			if (result != B_OK) {
+				delete fMuteIcon;
+				fMuteIcon = NULL;
+			}
+		}
+	}
+}
+
+
+HistoryListView::~HistoryListView()
+{
+	delete fNewIcon;
+	fNewIcon = NULL;
+	delete fMuteIcon;
+	fMuteIcon = NULL;
 }

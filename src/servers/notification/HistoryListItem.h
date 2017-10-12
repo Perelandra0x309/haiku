@@ -16,8 +16,7 @@ class HistoryListItem : public BListItem
 {
 public:
 							HistoryListItem(BMessage& notificationData,
-								const BBitmap* newIcon,
-								const BBitmap* muteIcon, float iconSize);
+								float iconSize);
 							HistoryListItem(int32 timestamp);
 							~HistoryListItem();
 	virtual void			DrawItem(BView *owner, BRect item_rect,
@@ -42,7 +41,7 @@ private:
 	BString					fTimeString;
 	bool					fWasAllowed;
 	float					fIconSize;
-	BBitmap*				fStatusIcon;
+//	BBitmap*				fStatusIcon;
 //	float					fFontHeight;
 	float					fFontAscent;
 	float					fTimeStringWidth;

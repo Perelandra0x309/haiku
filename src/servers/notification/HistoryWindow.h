@@ -25,6 +25,24 @@
 //typedef std::map<BString, AppUsage *> appusage_t;
 
 
+class HistoryListView : public BListView {
+public:
+								HistoryListView();
+								~HistoryListView();
+			float				GetTimeStringWidth()
+									{ return fTimeStringWidth; };
+			float				GetIconSize() { return fIconSize; };
+			BBitmap*			GetNewIcon() { return fNewIcon; };
+			BBitmap*			GetMuteIcon() { return fMuteIcon; };
+
+private:
+			float				fTimeStringWidth;
+			float				fIconSize;
+			BBitmap*			fNewIcon;
+			BBitmap*			fMuteIcon;
+};
+
+
 class HistoryView : public BView {
 public:
 								HistoryView();
@@ -44,23 +62,20 @@ private:
 			BPath				fCachePath;
 			bool				fShowingPreview;
 //			appusage_t			fAppFilters;
-//			BCheckBox*			fBlockAll;
 //			BTextControl*		fSearch;
 			BPopUpMenu*			fSetSelectionMenu;
 			BMenuField*			fSetSelectionMF;
 			int32				fSetSelection;
 			AppGroupView*		fGroupView;
-			BListView*			fListView;
+			HistoryListView*	fListView;
 			BScrollView*		fScrollView;
 			BGroupLayout*		fPreviewLayout;
 			BGroupLayout*		fBoxLayout;
 			NotificationView* 	fCurrentPreview;
 			BList				fAllList;
 			BList				fMutedList;
-			float				fIconSize;
-			BBitmap*			fNewIcon;
-			BBitmap*			fMuteIcon;
 };
+
 
 class HistoryWindow : public BWindow {
 public:
