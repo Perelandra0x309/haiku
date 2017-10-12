@@ -80,9 +80,8 @@ HistoryWindow::HistoryWindow()
 bool
 HistoryWindow::QuitRequested()
 {
-	if (!IsHidden())
-		Hide();
-	return false;
+	be_app->PostMessage(kHistoryWindowQuitting);
+	return true;
 }
 
 

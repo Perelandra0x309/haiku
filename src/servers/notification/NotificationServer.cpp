@@ -33,7 +33,8 @@ const char* kSoundNames[] = {
 
 NotificationServer::NotificationServer(status_t& error)
 	:
-	BServer(kNotificationServerSignature, true, &error)
+	BServer(kNotificationServerSignature, true, &error),
+	fHistory(NULL)
 {
 }
 
@@ -46,7 +47,7 @@ NotificationServer::~NotificationServer()
 bool
 NotificationServer::QuitRequested()
 {
-	if (fHistory) {
+	if (fHistory != NULL) {
 		BMessenger messenger(fHistory);
 		if (messenger.IsValid() && messenger.LockTarget())
 			fHistory->Quit();
@@ -59,7 +60,6 @@ void
 NotificationServer::ReadyToRun()
 {
 	fWindow = new NotificationWindow();
-	fHistory = new HistoryWindow();
 }
 
 
@@ -91,8 +91,17 @@ NotificationServer::MessageReceived(BMessage* message)
 			break;
 		}
 		case kShowHistory:
-			if (fHistory && fHistory->IsHidden())
-				fHistory->Show();
+			if (fHistory == NULL)
+				fHistory = new HistoryWindow();
+			if (fHistory != NULL) {
+				if (fHistory->IsHidden())
+					fHistory->Show();
+				if (!fHistory->IsFront())
+					fHistory->Activate();
+			}
+			break;
+		case kHistoryWindowQuitting:
+			fHistory = NULL;
 			break;
 		default:
 			BApplication::MessageReceived(message);

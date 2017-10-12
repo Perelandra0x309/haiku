@@ -23,6 +23,7 @@
 #include "NotificationView.h"
 
 //typedef std::map<BString, AppUsage *> appusage_t;
+const uint32 kHistoryWindowQuitting = 'HWQi';
 
 
 class HistoryListView : public BListView {
